@@ -1,6 +1,6 @@
 # amby
 
-A statistics visualization library built on top of [Charts](https://github.com/timbod7/haskell-chart)]. Amby provides a high level interface to quickly use visualization to explore data.
+A statistics visualization library built on top of [Charts](https://github.com/timbod7/haskell-chart). Amby provides a high level interface to quickly use visualization to explore data.
 
 ## Dependencies
 
