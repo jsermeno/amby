@@ -53,7 +53,9 @@ Here's how you might plot the normal distribution.
 λ> Am.save $ Am.plot x y
 ```
 
-<img src="https://cloud.githubusercontent.com/assets/197051/19673579/c4602948-9a46-11e6-98d3-ba35d4de689a.png" alt="normal distribution plot" width="400" height="300">
+<img src="https://cloud.githubusercontent.com/assets/197051/19673579/c4602948-9a46-11e6-98d3-ba35d4de689a.png" alt="normal distribution plot" width="600" height="450">
+
+### Interactivity
 
 Amby provides shortcuts to speedup iteration. `Am.save` is a shortcut that saves the graph as a png file using the Cairo backend to a file named `__amby.png`. This allows you to run a command in a terminal window such as:
 
@@ -70,8 +72,12 @@ This will allow you to create graphs in ghci, and have them display in another w
 You can also specify graphs using a domain and an equation.
 
 ```
-λ> Am.save $ Am.plotEq [0,0.001..4] sqrt
+λ> Am.save $ do
+λ|   Am.theme Am.cleanTheme
+λ|   Am.plotEq [0,0.001..4] sqrt
 ```
+
+<img src="https://cloud.githubusercontent.com/assets/197051/19674133/7a618698-9a4b-11e6-98f5-bd7c8df78f6d.png" alt="clean theme equation plot" width="600" height="450">
 
 ### Multiple container types
 
@@ -100,4 +106,4 @@ Plotting functions work on both lists and generic vectors of doubles.
 λ|   ylim 0.0 2.5
 ```
 
-<img src="https://cloud.githubusercontent.com/assets/197051/19673297/15506550-9a44-11e6-9a93-b7fb62632578.png" alt="multiple beta distributions" width="400" height="300">
+<img src="https://cloud.githubusercontent.com/assets/197051/19673297/15506550-9a44-11e6-9a93-b7fb62632578.png" alt="multiple beta distributions" width="600" height="450">
