@@ -53,7 +53,7 @@ Here's how you might plot the normal distribution.
 λ> Am.save $ Am.plot x y
 ```
 
-<img src="https://cloud.githubusercontent.com/assets/197051/19674286/a8a8e3f6-9a4c-11e6-9bdf-2a67b6d46660.png" alt="normal distribution plot" width="600" height="450">
+<img src="https://cloud.githubusercontent.com/assets/197051/19674286/a8a8e3f6-9a4c-11e6-9bdf-2a67b6d46660.png" alt="normal distribution plot" width="400" height="300">
 
 ### Interactivity
 
@@ -75,7 +75,7 @@ You can also specify graphs using a domain and an equation.
 λ> Am.save $ Am.plotEq [0,0.001..4] sqrt
 ```
 
-<img src="https://cloud.githubusercontent.com/assets/197051/19674456/eaff0d42-9a4d-11e6-9560-e41f64514fb9.png" alt="clean theme equation plot" width="600" height="450">
+<img src="https://cloud.githubusercontent.com/assets/197051/19674456/eaff0d42-9a4d-11e6-9560-e41f64514fb9.png" alt="clean theme equation plot" width="400" height="300">
 
 ### Multiple container types
 
@@ -105,4 +105,4 @@ Plotting functions work on both lists and generic vectors of doubles.
 λ|   ylim (0.0, 2.5)
 ```
 
-<img src="https://cloud.githubusercontent.com/assets/197051/19674436/cfa79db6-9a4d-11e6-84b3-ba5a6000a41b.png" alt="multiple beta distributions" width="600" height="450">
+<img src="https://cloud.githubusercontent.com/assets/197051/19674436/cfa79db6-9a4d-11e6-84b3-ba5a6000a41b.png" alt="multiple beta distributions" width="400" height="300">
