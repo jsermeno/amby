@@ -72,12 +72,10 @@ This will allow you to create graphs in ghci, and have them display in another w
 You can also specify graphs using a domain and an equation.
 
 ```
-λ> Am.save $ do
-λ|   Am.theme Am.cleanTheme
-λ|   Am.plotEq [0,0.001..4] sqrt
+λ> Am.save $ Am.plotEq [0,0.001..4] sqrt
 ```
 
-<img src="https://cloud.githubusercontent.com/assets/197051/19674133/7a618698-9a4b-11e6-98f5-bd7c8df78f6d.png" alt="clean theme equation plot" width="600" height="450">
+<img src="https://cloud.githubusercontent.com/assets/197051/19674456/eaff0d42-9a4d-11e6-9560-e41f64514fb9.png" alt="clean theme equation plot" width="600" height="450">
 
 ### Multiple container types
 
@@ -98,6 +96,7 @@ Plotting functions work on both lists and generic vectors of doubles.
 λ|           y = Am.contDistrRange d x
 λ|       Am.plot x y
 λ> Am.save $ do
+λ|   Am.theme Am.cleanTheme
 λ|   plotBeta 0.5 0.5
 λ|   plotBeta 5 1
 λ|   plotBeta 1 3
@@ -106,4 +105,4 @@ Plotting functions work on both lists and generic vectors of doubles.
 λ|   ylim (0.0, 2.5)
 ```
 
-<img src="https://cloud.githubusercontent.com/assets/197051/19674340/0816e2de-9a4d-11e6-83d4-0c264c1add12.png" alt="multiple beta distributions" width="600" height="450">
+<img src="https://cloud.githubusercontent.com/assets/197051/19674436/cfa79db6-9a4d-11e6-84b3-ba5a6000a41b.png" alt="multiple beta distributions" width="600" height="450">
