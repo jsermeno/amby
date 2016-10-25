@@ -6,41 +6,6 @@ A statistics visualization library built on top of [Chart](https://github.com/ti
 <img src="https://cloud.githubusercontent.com/assets/197051/19674456/eaff0d42-9a4d-11e6-9560-e41f64514fb9.png" alt="clean theme equation plot" width="200" height="150">
 <img src="https://cloud.githubusercontent.com/assets/197051/19674436/cfa79db6-9a4d-11e6-84b3-ba5a6000a41b.png" alt="multiple beta distributions" width="200" height="150">
 
-## Dependencies
-
-To use amby you'll first need to install Chart and gtk2hs if you don't already have them.
-
-### Mac OS X
-
-Here are the instructions I used to install Chart and gtk2hs on OS X El Capitan with stack.
-
-```
-stack install Chart-diagrams
-brew cask install xquartz
-brew install glib cairo gtk gettext fontconfig freetype
-```
-
-Add the following environment variable `export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig` to `.bashrc` or similar file.
-
-```
-stack install alex happy
-stack install gtk2hs-buildtools
-stack install glib
-stack install -- gtk --flag gtk:have-quartz-gtk
-stack install Chart-cairo
-```
-
-### Linux and Windows
-
-Instructions for installing gtk2hs on Linux and Windows can be found [here](https://wiki.haskell.org/Gtk2Hs/Installation).
-
-Likewise, run
-
-```
-stack install Chart-diagrams
-stack install Chart-cairo
-```
-
 ## Usage
 
 ```
@@ -110,3 +75,38 @@ Plotting functions work on both lists and generic vectors of doubles.
 ```
 
 <img src="https://cloud.githubusercontent.com/assets/197051/19674436/cfa79db6-9a4d-11e6-84b3-ba5a6000a41b.png" alt="multiple beta distributions" width="400" height="300">
+
+## Dependencies
+
+To use amby you'll first need to install Chart and gtk2hs if you don't already have them.
+
+### Mac OS X
+
+Here are the instructions I used to install Chart and gtk2hs on OS X El Capitan with stack.
+
+```
+stack install Chart-diagrams
+brew cask install xquartz
+brew install glib cairo gtk gettext fontconfig freetype
+```
+
+Add the following environment variable `export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig` to `.bashrc` or similar file.
+
+```
+stack install alex happy
+stack install gtk2hs-buildtools
+stack install glib
+stack install -- gtk --flag gtk:have-quartz-gtk
+stack install Chart-cairo
+```
+
+### Linux and Windows
+
+Instructions for installing gtk2hs on Linux and Windows can be found [here](https://wiki.haskell.org/Gtk2Hs/Installation).
+
+Likewise, run
+
+```
+stack install Chart-diagrams
+stack install Chart-cairo
+```
