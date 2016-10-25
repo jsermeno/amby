@@ -41,12 +41,12 @@ stack install Chart-cairo
 
 ```
 λ> import qualified Amby as Am
-λ> import qualified Statistics.Distribution.Normal as Stats
 ```
 
 Here's how you might plot the normal distribution.
 
 ```
+λ> import qualified Statistics.Distribution.Normal as Stats
 λ> let d = Stats.standard
 λ> let x = Am.contDistrDomain d 10000
 λ> let y = Am.contDistrRange d x
