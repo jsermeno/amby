@@ -2,6 +2,10 @@
 
 A statistics visualization library built on top of [Chart](https://github.com/timbod7/haskell-chart) heavily inspired by [Seaborn](https://github.com/mwaskom/seaborn). Amby provides a high level interface to quickly display attractive visualizations.
 
+<img src="https://cloud.githubusercontent.com/assets/197051/19674286/a8a8e3f6-9a4c-11e6-9bdf-2a67b6d46660.png" alt="normal distribution plot" width="300" height="225">
+<img src="https://cloud.githubusercontent.com/assets/197051/19674456/eaff0d42-9a4d-11e6-9560-e41f64514fb9.png" alt="clean theme equation plot" width="300" height="225">
+<img src="https://cloud.githubusercontent.com/assets/197051/19674436/cfa79db6-9a4d-11e6-84b3-ba5a6000a41b.png" alt="multiple beta distributions" width="300" height="225">
+
 ## Dependencies
 
 To use amby you'll first need to install Chart and gtk2hs if you don't already have them.
