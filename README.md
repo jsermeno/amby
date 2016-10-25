@@ -53,7 +53,7 @@ Here's how you might plot the normal distribution.
 λ> Am.save $ Am.plot x y
 ```
 
-<img src="https://cloud.githubusercontent.com/assets/197051/19673579/c4602948-9a46-11e6-98d3-ba35d4de689a.png" alt="normal distribution plot" width="600" height="450">
+<img src="https://cloud.githubusercontent.com/assets/197051/19674286/a8a8e3f6-9a4c-11e6-9bdf-2a67b6d46660.png" alt="normal distribution plot" width="600" height="450">
 
 ### Interactivity
 
@@ -103,7 +103,7 @@ Plotting functions work on both lists and generic vectors of doubles.
 λ|   plotBeta 1 3
 λ|   plotBeta 2 2
 λ|   plotBeta 2 5
-λ|   ylim 0.0 2.5
+λ|   ylim (0.0, 2.5)
 ```
 
-<img src="https://cloud.githubusercontent.com/assets/197051/19673297/15506550-9a44-11e6-9a93-b7fb62632578.png" alt="multiple beta distributions" width="600" height="450">
+<img src="https://cloud.githubusercontent.com/assets/197051/19674340/0816e2de-9a4d-11e6-83d4-0c264c1add12.png" alt="multiple beta distributions" width="600" height="450">

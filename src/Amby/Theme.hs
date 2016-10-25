@@ -30,7 +30,7 @@ data Theme = Theme
   }
 
 instance Default Theme where
-  def = mutedTheme
+  def = deepTheme
 
 mutedTheme :: Theme
 mutedTheme = Theme
