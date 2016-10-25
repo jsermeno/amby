@@ -1,6 +1,6 @@
 module Main where
 
-import Lib
+import Amby
 
 main :: IO ()
-main = someFunc
+main = return ()
