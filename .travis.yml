@@ -21,6 +21,12 @@ before_install:
         export PATH=$HOME/.local/bin:/opt/ghc/$GHCVER/bin:$PATH;;
     esac
   - ./.travis-setup.sh
+  - stack install alex happy
+  - stack install Chart-diagrams
+  - stack install gtk2hs-buildtools
+  - stack install glib
+  - stack install -- gtk --flag gtk:have-quartz-gtk
+  - stack install Chart-cairo
 
 install:
   - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
