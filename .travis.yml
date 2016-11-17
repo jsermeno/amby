@@ -12,7 +12,7 @@ matrix:
   include:
     - env: BUILD=stack GHCVER=8.0.1 STACK_YAML=stack.yaml
       compiler: ": #stack 8.0.1"
-      addons: {apt: {packages: [ghc-8.0.1], sources: [hvr-ghc]}}
+      addons: {apt: {packages: [ghc-8.0.1,happy-1.19.5,alex-3.1.4,libgtk2.0-dev,libgtk-3-dev], sources: [hvr-ghc]}}
 
 before_install:
   - unset CC
