@@ -38,6 +38,7 @@ library
                      , pretty-display
                      , process
                      , exceptions
+                     , data-default
   default-language:    Haskell2010
 
 executable amby-exe

@@ -30,7 +30,7 @@ Here's how you might plot the standard normal distribution.
 
 ### Interactivity
 
-Amby allows you to display charts directly inside ghci. This requires two things. The [`imgcat`](https://github.com/eddieantonio/imgcat#Build) executable, and the [`pretty-display`](https://github.com/jsermeno/pretty-display) package. See below for instructions on how install `imgcat` and setup `pretty-display`. So far, this has only been tested on Mac OS X.
+Amby allows you to display charts directly inside ghci. This requires two things. The [`imgcat`](https://github.com/eddieantonio/imgcat#Build) executable, and the [`pretty-display`](https://github.com/jsermeno/pretty-display) package. See below for instructions on how install `imgcat` and setup `pretty-display`. This has been tested on Mac OS X. Amby provides `Display` instances for `AmbyChart ()` and `EC (Layout Double Double) ()`.
 
 <img src="https://cloud.githubusercontent.com/assets/197051/20401530/36e64424-acc7-11e6-889a-a664b4de9f82.png" alt="terminal example" width="637" height="524">
 
