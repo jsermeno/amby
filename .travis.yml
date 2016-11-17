@@ -1,0 +1,36 @@
+language: c
+sudo: false
+
+cache:
+  directories:
+  - $HOME/.ghc
+  - $HOME/.cabal
+  - $HOME/.stack
+
+matrix:
+  fast_finish: true
+  include:
+    - env: BUILD=stack GHCVER=8.0.1 STACK_YAML=stack.yaml
+      compiler: ": #stack 8.0.1"
+      addons: {apt: {packages: [ghc-8.0.1], sources: [hvr-ghc]}}
+
+before_install:
+  - unset CC
+  - case "$BUILD" in
+      stack)
+        export PATH=$HOME/.local/bin:/opt/ghc/$GHCVER/bin:$PATH;;
+    esac
+  - ./.travis-setup.sh
+
+install:
+  - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
+  - case "$BUILD" in
+      stack)
+        stack --no-terminal test --only-dependencies;;
+    esac
+
+script:
+  - set -e ; case "$BUILD" in
+      stack)
+        stack --no-terminal test --haddock --no-haddock-deps --ghc-options="-Werror";;
+    esac
