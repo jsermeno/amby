@@ -42,7 +42,7 @@ You can also specify graphs using a domain and an equation.
 λ> Am.save $ Am.plotEq [0,0.001..4] sqrt
 ```
 
-<img src="https://cloud.githubusercontent.com/assets/197051/19674456/eaff0d42-9a4d-11e6-9560-e41f64514fb9.png" alt="clean theme equation plot" width="400" height="300">
+<img src="https://cloud.githubusercontent.com/assets/197051/19674456/eaff0d42-9a4d-11e6-9560-e41f64514fb9.png" alt="clean theme equation plot" width="637" height="524">
 
 ### Multiple container types
 
