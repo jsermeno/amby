@@ -21,6 +21,7 @@ before_install:
         export PATH=$HOME/.local/bin:/opt/ghc/$GHCVER/bin:$PATH;;
     esac
   - ./.travis-setup.sh
+  - stack install gtk2hs-buildtools
   - stack install Chart-diagrams
   - stack install Chart-cairo
 
