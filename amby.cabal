@@ -1,16 +1,18 @@
 name:                amby
 version:             0.2.0
-synopsis:            Initial project template from stack
-description:         Please see README.md
+synopsis:            Statistical data visualization.
+description:         Statistical data visualization. Provides a high-level
+                     interface built on top of
+                     <https://github.com/timbod7/haskell-chart/wiki Chart>
+                     to quickly display attractive visualizations within GHCi.
 homepage:            https://github.com/githubuser/amby#readme
 license:             BSD3
 license-file:        LICENSE
-author:              Author name here
-maintainer:          example@example.com
-copyright:           2016 Author name here
-category:            Web
+author:              Justin Sermeno
+maintainer:          Justin Sermeno
+copyright:           Copyright (c) 2014-2016 Justin Sermeno
+category:            Graphics
 build-type:          Simple
--- extra-source-files:
 cabal-version:       >=1.10
 
 library
