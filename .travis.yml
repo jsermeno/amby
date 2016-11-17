@@ -46,7 +46,7 @@ matrix:
     compiler: ": #stack nightly"
     addons: {apt: {packages: [libgmp,libgmp-dev,happy-1.19.5,alex-3.1.4,libgtk2.0-dev,libgtk-3-dev,libghc-gtk-dev]}}
 
-	allow_failures:
+  allow_failures:
   - env: BUILD=cabal GHCVER=head  CABALVER=head HAPPYVER=1.19.5 ALEXVER=3.1.7
   - env: BUILD=stack ARGS="--resolver nightly"
 
