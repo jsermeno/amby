@@ -30,9 +30,9 @@ Here's how you might plot the standard normal distribution.
 
 ### Interactivity
 
-Amby allows you to display charts directly inside ghci. This requires two things. The [`imgcat`](https://github.com/eddieantonio/imgcat#Build) executable, and the [`pretty-display`](https://github.com/jsermeno/pretty-display) package. See below for instructions on how install imgcat, and setup `pretty-display` in your `.ghci` file.
+Amby allows you to display charts directly inside ghci. This requires two things. The [`imgcat`](https://github.com/eddieantonio/imgcat#Build) executable, and the [`pretty-display`](https://github.com/jsermeno/pretty-display) package. See below for instructions on how install `imgcat` and setup `pretty-display`. So far, this has only been tested on Mac OS X.
 
-<img src="https://cloud.githubusercontent.com/assets/197051/19673860/5045b520-9a49-11e6-8c04-04e96dcab4fb.png" alt="terminal example" width="512" height="320">
+<img src="https://cloud.githubusercontent.com/assets/197051/20401530/36e64424-acc7-11e6-889a-a664b4de9f82.png" alt="terminal example" width="512" height="320">
 
 ### Plot graph using equations
 
@@ -137,3 +137,5 @@ import Text.Display
 :def pp (\_ -> return ":set -interactive-print=Text.Display.dPrint")
 :def npp (\_ -> return ":set -interactive-print=print")
 ```
+
+4. Restart ghci.
