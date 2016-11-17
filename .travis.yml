@@ -78,23 +78,25 @@ before_install:
   then
     echo 'jobs: $ncpus' >> $HOME/.cabal/config
   fi
-- case "$BUILD" in
+- |
+  set -ex
+  case "$BUILD" in
     stack)
-      export PATH=$HOME/.local/bin:/opt/ghc/$GHCVER/bin:$PATH
       stack install gtk2hs-buildtools
       stack install Chart-diagrams
       stack install Chart-cairo
       ;;
     cabal)
+      cabal update
       cabal install gtk2hs-buildtools
-      cabal install Chart-diagrams
-      cabal install Chart-cairo
+      cabal install chart-diagrams
+      cabal install chart-cairo
       ;;
   esac
+  set +ex
 
 # Get the list of packages from the stack.yaml file
 - PACKAGES=$(stack --install-ghc query locals | grep '^ *path' | sed 's@^ *path:@@')
-
 
 install:
 - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
