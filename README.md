@@ -1,5 +1,9 @@
 # amby: statistical data visualization
 
+[![Build Status](https://travis-ci.org/jsermeno/amby.svg?branch=master)](https://travis-ci.org/jsermeno/amby)
+[![Haskell Programming Language](https://img.shields.io/badge/language-Haskell-blue.svg)](Haskell.org)
+[![BSD3 License](http://img.shields.io/badge/license-BSD3-brightgreen.svg)](tl;dr Legal: BSD3)
+
 <img src="https://cloud.githubusercontent.com/assets/197051/19674286/a8a8e3f6-9a4c-11e6-9bdf-2a67b6d46660.png" alt="normal distribution plot" width="200" height="150">
 <img src="https://cloud.githubusercontent.com/assets/197051/19674456/eaff0d42-9a4d-11e6-9560-e41f64514fb9.png" alt="clean theme equation plot" width="200" height="150">
 <img src="https://cloud.githubusercontent.com/assets/197051/19674436/cfa79db6-9a4d-11e6-84b3-ba5a6000a41b.png" alt="multiple beta distributions" width="200" height="150">
@@ -12,7 +16,7 @@ A statistics visualization library built on top of [Chart](https://github.com/ti
 λ> import qualified Amby as Am
 ```
 
-Here's how you might plot the normal distribution.
+Here's how you might plot the standard normal distribution.
 
 ```
 λ> import qualified Statistics.Distribution.Normal as Stats
@@ -26,13 +30,7 @@ Here's how you might plot the normal distribution.
 
 ### Interactivity
 
-Amby provides shortcuts to speedup iteration. `Am.save` is a shortcut that saves the graph as a png file using the Cairo backend to a file named `__amby.png`. This allows you to run a command in a terminal window such as:
-
-```
-ls -d __amby.png | entr -r imgcat /_
-```
-
-This will allow you to create graphs in ghci, and have them display in another window instanteously.
+Amby allows you to display charts directly inside ghci. This requires two things. The [`imgcat`](https://github.com/eddieantonio/imgcat#Build) executable, and the [`pretty-display`](https://github.com/jsermeno/pretty-display) package. See below for instructions on how install imgcat, and setup `pretty-display` in your `.ghci` file.
 
 <img src="https://cloud.githubusercontent.com/assets/197051/19673860/5045b520-9a49-11e6-8c04-04e96dcab4fb.png" alt="terminal example" width="512" height="320">
 
@@ -109,4 +107,33 @@ Likewise, run
 ```
 stack install Chart-diagrams
 stack install Chart-cairo
+```
+
+## Imgcat
+
+To be able to display charts in ghci you'll need imgcat.
+
+### Mac OS X
+
+```
+brew tap eddieantonio/eddieantonio
+brew install imgcat
+```
+
+### Linux and Windows
+
+For more information visit [imgcat's repository](https://github.com/eddieantonio/imgcat#Build)
+
+## pretty-display
+
+1. Add `pretty-display` to your cabal file.
+2. `stack build`
+3. Place the following in your `.ghci` file. If you're using stack you can put this file at the root of your project.
+
+```
+import Text.Display
+
+:set -interactive-print=Text.Display.dPrint
+:def pp (\_ -> return ":set -interactive-print=Text.Display.dPrint")
+:def npp (\_ -> return ":set -interactive-print=print")
 ```

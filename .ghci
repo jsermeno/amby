@@ -1,0 +1,5 @@
+import Text.Display
+
+:set -interactive-print=Text.Display.dPrint
+:def pp (\_ -> return ":set -interactive-print=Text.Display.dPrint")
+:def npp (\_ -> return ":set -interactive-print=print")

@@ -1,5 +1,10 @@
 {-# LANGUAGE FlexibleContexts #-}
-module Amby.Numeric where
+module Amby.Numeric
+  ( contDistrDomain
+  , contDistrRange
+  , linspace
+  , arange
+  ) where
 
 import Data.Either.Combinators
 import Data.Scientific
@@ -23,3 +28,6 @@ linspace start stop num
     delta = stop - start
     step = delta / fromIntegral (num - 1)
     addStart = U.map (realToFrac . (+ start))
+
+arange :: Double -> Double -> Double -> U.Vector Double
+arange start stop step = U.fromList [start,(start + step)..stop]
