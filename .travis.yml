@@ -44,12 +44,12 @@ matrix:
 
   allow_failures:
   - env: BUILD=cabal GHCVER=head CABALVER=head
-  - env: BUILD=stack ARGS="--resolver nightly"
+  - env: BUILD=stack ARGS="--resolver nightly" GHCVER=nightly
 
 before_install:
 # Using compiler above sets CC to an invalid value, so unset it
 - unset CC
-- export HAPPYVER=1.19.15
+- export HAPPYVER=1.19.5
 - export ALEXVER=3.1.7
 
 # We want to always allow newer versions of packages when building on GHC HEAD
