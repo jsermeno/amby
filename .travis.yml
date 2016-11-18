@@ -10,16 +10,16 @@ cache:
 matrix:
   fast_finish: true
   include:
-  - env: BUILD=cabal GHCVER=7.10.3 CABALVER=1.22 HAPPYVER=1.19.5 ALEXVER=3.1.7
+  - env: BUILD=cabal GHCVER=7.10.3 CABALVER=1.22
     compiler: ": #GHC 7.10.3"
     addons: {apt: {packages: [cabal-install-1.22,ghc-7.10.3,happy-1.19.5,alex-3.1.7,libgtk-3-dev,libghc-gtk-dev], sources: [hvr-ghc]}}
-  - env: BUILD=cabal GHCVER=8.0.1 CABALVER=1.24 HAPPYVER=1.19.5 ALEXVER=3.1.7
+  - env: BUILD=cabal GHCVER=8.0.1 CABALVER=1.24
     compiler: ": #GHC 8.0.1"
     addons: {apt: {packages: [cabal-install-1.24,ghc-8.0.1,happy-1.19.5,alex-3.1.7,libgtk-3-dev,libghc-gtk-dev], sources: [hvr-ghc]}}
 
   # Build with the newest GHC and cabal-install. This is an accepted failure,
   # see below.
-  - env: BUILD=cabal GHCVER=head CABALVER=head HAPPYVER=1.19.5 ALEXVER=3.1.7
+  - env: BUILD=cabal GHCVER=head CABALVER=head
     compiler: ": #GHC HEAD"
     addons: {apt: {packages: [cabal-install-head,ghc-head,happy-1.19.5,alex-3.1.7,libgtk-3-dev,libghc-gtk-dev], sources: [hvr-ghc]}}
 
@@ -29,26 +29,28 @@ matrix:
     compiler: ": #stack default"
     addons: {apt: {packages: [libgmp-dev,ghc-7.10.3,happy-1.19.5,alex-3.1.7,libgtk-3-dev,libghc-gtk-dev], sources: [hvr-ghc]}}
 
-  - env: BUILD=stack ARGS="--resolver lts-3" GHCVER=7.10.2 HAPPYVER=1.19.5 ALEXVER=3.1.7
+  - env: BUILD=stack ARGS="--resolver lts-3" GHCVER=7.10.2
     compiler: ": #stack 7.10.2"
     addons: {apt: {packages: [libgmp-dev,ghc-7.10.2,happy-1.19.5,alex-3.1.7,libgtk-3-dev,libghc-gtk-dev], sources: [hvr-ghc]}}
 
-  - env: BUILD=stack ARGS="--resolver lts-6" GHCVER=7.10.3 HAPPYVER=1.19.5 ALEXVER=3.1.7
+  - env: BUILD=stack ARGS="--resolver lts-6" GHCVER=7.10.3
     compiler: ": #stack 7.10.3"
     addons: {apt: {packages: [libgmp-dev,ghc-7.10.3,happy-1.19.5,alex-3.1.7,libgtk-3-dev,libghc-gtk-dev], sources: [hvr-ghc]}}
 
   # Nightly builds are allowed to fail
-  - env: BUILD=stack ARGS="--resolver nightly" HAPPYVER=1.19.5 ALEXVER=3.1.7
+  - env: BUILD=stack ARGS="--resolver nightly"
     compiler: ": #stack nightly"
     addons: {apt: {packages: [libgmp-dev,happy-1.19.5,alex-3.1.7,libgtk-3-dev,libghc-gtk-dev], sources: [hvr-ghc]}}
 
   allow_failures:
-  - env: BUILD=cabal GHCVER=head CABALVER=head HAPPYVER=1.19.5 ALEXVER=3.1.7
-  - env: BUILD=stack ARGS="--resolver nightly" HAPPYVER=1.19.5 ALEXVER=3.1.7
+  - env: BUILD=cabal GHCVER=head CABALVER=head
+  - env: BUILD=stack ARGS="--resolver nightly"
 
 before_install:
 # Using compiler above sets CC to an invalid value, so unset it
 - unset CC
+- export HAPPYVER=1.19.15
+- export ALEXVER=3.1.7
 
 # We want to always allow newer versions of packages when building on GHC HEAD
 - CABALARGS=""
@@ -85,9 +87,10 @@ install:
   set -ex
   case "$BUILD" in
     stack)
-      stack install gtk2hs-buildtools
-      stack install Chart-diagrams
-      stack install Chart-cairo
+      stack setup $ARGS
+      stack install gtk2hs-buildtools $ARGS
+      stack install Chart-diagrams $ARGS
+      stack install Chart-cairo $ARGS
       stack --no-terminal --install-ghc $ARGS test --bench --only-dependencies
       ;;
     cabal)
