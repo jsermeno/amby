@@ -38,7 +38,7 @@ matrix:
     addons: {apt: {packages: [libgmp-dev,ghc-7.10.3,happy-1.19.5,alex-3.1.7,libgtk-3-dev,libghc-gtk-dev], sources: [hvr-ghc]}}
 
   # Nightly builds are allowed to fail
-  - env: BUILD=stack ARGS="--resolver nightly"
+  - env: BUILD=stack ARGS="--resolver nightly" GHCVER=nightly
     compiler: ": #stack nightly"
     addons: {apt: {packages: [libgmp-dev,happy-1.19.5,alex-3.1.7,libgtk-3-dev,libghc-gtk-dev], sources: [hvr-ghc]}}
 
@@ -88,6 +88,10 @@ install:
   case "$BUILD" in
     stack)
       stack setup $ARGS
+      if [ "x$GHCVER" = "xnightly" ]
+      then
+        stack setup --upgrade-cabal $ARGS
+      fi
       stack install gtk2hs-buildtools $ARGS
       stack install Chart-diagrams $ARGS
       stack install Chart-cairo $ARGS
