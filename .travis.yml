@@ -29,11 +29,11 @@ matrix:
     compiler: ": #stack default"
     addons: {apt: {packages: [libgmp-dev,ghc-7.10.3,happy-1.19.5,alex-3.1.7,libgtk-3-dev,libghc-gtk-dev], sources: [hvr-ghc]}}
 
-  - env: BUILD=stack ARGS="--resolver lts-3" HAPPYVER=1.19.5 ALEXVER=3.1.7
+  - env: BUILD=stack ARGS="--resolver lts-3" GHCVER=7.10.2 HAPPYVER=1.19.5 ALEXVER=3.1.7
     compiler: ": #stack 7.10.2"
     addons: {apt: {packages: [libgmp-dev,ghc-7.10.2,happy-1.19.5,alex-3.1.7,libgtk-3-dev,libghc-gtk-dev], sources: [hvr-ghc]}}
 
-  - env: BUILD=stack ARGS="--resolver lts-6" HAPPYVER=1.19.5 ALEXVER=3.1.7
+  - env: BUILD=stack ARGS="--resolver lts-6" GHCVER=7.10.3 HAPPYVER=1.19.5 ALEXVER=3.1.7
     compiler: ": #stack 7.10.3"
     addons: {apt: {packages: [libgmp-dev,ghc-7.10.3,happy-1.19.5,alex-3.1.7,libgtk-3-dev,libghc-gtk-dev], sources: [hvr-ghc]}}
 
@@ -43,8 +43,8 @@ matrix:
     addons: {apt: {packages: [libgmp-dev,happy-1.19.5,alex-3.1.7,libgtk-3-dev,libghc-gtk-dev], sources: [hvr-ghc]}}
 
   allow_failures:
-  - env: BUILD=cabal GHCVER=head  CABALVER=head HAPPYVER=1.19.5 ALEXVER=3.1.7
-  - env: BUILD=stack ARGS="--resolver nightly"
+  - env: BUILD=cabal GHCVER=head CABALVER=head HAPPYVER=1.19.5 ALEXVER=3.1.7
+  - env: BUILD=stack ARGS="--resolver nightly" HAPPYVER=1.19.5 ALEXVER=3.1.7
 
 before_install:
 # Using compiler above sets CC to an invalid value, so unset it
