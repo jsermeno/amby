@@ -74,22 +74,6 @@ before_install:
   then
     echo 'jobs: $ncpus' >> $HOME/.cabal/config
   fi
-- |
-  set -ex
-  case "$BUILD" in
-    stack)
-      stack install gtk2hs-buildtools
-      stack install Chart-diagrams
-      stack install Chart-cairo
-      ;;
-    cabal)
-      cabal update
-      cabal install gtk2hs-buildtools
-      cabal install chart-diagrams
-      cabal install chart-cairo
-      ;;
-  esac
-  set +ex
 
 # Get the list of packages from the stack.yaml file
 - PACKAGES=$(stack --install-ghc query locals | grep '^ *path' | sed 's@^ *path:@@')
@@ -101,9 +85,15 @@ install:
   set -ex
   case "$BUILD" in
     stack)
+      stack install gtk2hs-buildtools
+      stack install Chart-diagrams
+      stack install Chart-cairo
       stack --no-terminal --install-ghc $ARGS test --bench --only-dependencies
       ;;
     cabal)
+      cabal install gtk2hs-buildtools
+      cabal install chart-diagrams
+      cabal install chart-cairo
       cabal --version
       travis_retry cabal update
       cabal install --only-dependencies --enable-tests --enable-benchmarks --force-reinstalls --ghc-options=-O0 --reorder-goals --max-backjumps=-1 $CABALARGS $PACKAGES
