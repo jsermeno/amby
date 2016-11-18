@@ -40,7 +40,7 @@ matrix:
   # Nightly builds are allowed to fail
   - env: BUILD=stack ARGS="--resolver nightly"
     compiler: ": #stack nightly"
-    addons: {apt: {packages: [libgmp-dev,libglib2.0-dev,libcairo2-dev,libpango1.0-dev,libgtk-3-dev,libghc-gtk-dev]}}
+    addons: {apt: {packages: [happy-1.19.5,alex-3.1.4,libgtk-3-dev,libghc-gtk-dev], sources: [hvr-ghc]}}
 
   allow_failures:
   - env: BUILD=cabal GHCVER=head  CABALVER=head HAPPYVER=1.19.5 ALEXVER=3.1.7
@@ -85,10 +85,7 @@ install:
   set -ex
   case "$BUILD" in
     stack)
-      stack install alex happy
       stack install gtk2hs-buildtools
-      stack install glib
-      stack install gtk
       stack install Chart-diagrams
       stack install Chart-cairo
       stack --no-terminal --install-ghc $ARGS test --bench --only-dependencies
