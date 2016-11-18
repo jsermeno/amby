@@ -91,6 +91,7 @@ install:
       stack --no-terminal --install-ghc $ARGS test --bench --only-dependencies
       ;;
     cabal)
+      cabal update
       cabal install gtk2hs-buildtools
       cabal install chart-diagrams
       cabal install chart-cairo

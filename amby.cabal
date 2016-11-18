@@ -1,11 +1,11 @@
 name:                amby
-version:             0.2.0
+version:             0.2.1
 synopsis:            Statistical data visualization
 description:         Statistical data visualization. Provides a high-level
                      interface built on top of
                      <https://github.com/timbod7/haskell-chart/wiki Chart>
                      to quickly display attractive visualizations within GHCi.
-homepage:            https://github.com/githubuser/amby#readme
+homepage:            https://github.com/jsermeno/amby#readme
 license:             BSD3
 license-file:        LICENSE
 author:              Justin Sermeno
@@ -63,4 +63,4 @@ test-suite amby-test
 
 source-repository head
   type:     git
-  location: https://github.com/githubuser/amby
+  location: https://github.com/jsermeno/amby
