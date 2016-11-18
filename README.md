@@ -8,17 +8,17 @@
 <img src="https://cloud.githubusercontent.com/assets/197051/19674456/eaff0d42-9a4d-11e6-9560-e41f64514fb9.png" alt="clean theme equation plot" width="200" height="150">
 <img src="https://cloud.githubusercontent.com/assets/197051/19674436/cfa79db6-9a4d-11e6-84b3-ba5a6000a41b.png" alt="multiple beta distributions" width="200" height="150">
 
-A statistics visualization library built on top of [Chart](https://github.com/timbod7/haskell-chart) heavily inspired by [Seaborn](https://github.com/mwaskom/seaborn). Amby provides a high level interface to quickly display attractive visualizations. Amby also provides tools to display Charts from both Amby and the Chart package within GHCi.
+A statistics visualization library built on top of [Chart](https://github.com/timbod7/haskell-chart) inspired by [Seaborn](https://github.com/mwaskom/seaborn). Amby provides a high level interface to quickly display attractive visualizations. Amby also provides tools to display Charts from both Amby and the Chart package within GHCi.
 
 ## Usage
 
-```
+```haskell
 λ> import qualified Amby as Am
 ```
 
 Here's how you might plot the standard normal distribution.
 
-```
+```haskell
 λ> import qualified Statistics.Distribution.Normal as Stats
 λ> let d = Stats.standard
 λ> let x = Am.contDistrDomain d 10000
@@ -38,7 +38,7 @@ Amby allows you to display charts directly inside ghci. This requires two things
 
 You can also specify graphs using a domain and an equation.
 
-```
+```haskell
 λ> Am.save $ Am.plotEq [0,0.001..4] sqrt
 ```
 
@@ -48,14 +48,14 @@ You can also specify graphs using a domain and an equation.
 
 Plotting functions work on both lists and generic vectors of doubles.
 
-```
+```haskell
 λ> Am.save $ Am.plotEq [0,0.001..4] sqrt
 λ> Am.save $ Am.plotEq (Am.linspace 0 4 4000) sqrt
 ```
 
 ### Combine graphs using do notation
 
-```
+```haskell
 λ> import Statistics.Distribution.Beta as Stats
 λ> let plotBeta a b =
 λ|       let d = Stats.betaDistr a b
@@ -82,7 +82,7 @@ To use amby you'll first need to install Chart and gtk2hs if you don't already h
 
 Here are the instructions I used to install Chart and gtk2hs on OS X El Capitan with stack.
 
-```
+```haskell
 stack install Chart-diagrams
 brew cask install xquartz
 brew install glib cairo gtk gettext fontconfig freetype
@@ -90,7 +90,7 @@ brew install glib cairo gtk gettext fontconfig freetype
 
 Add the following environment variable `export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig` to `.bashrc` or similar file.
 
-```
+```haskell
 stack install alex happy
 stack install gtk2hs-buildtools
 stack install glib
@@ -104,7 +104,7 @@ Instructions for installing gtk2hs on Linux and Windows can be found [here](http
 
 Likewise, run
 
-```
+```haskell
 stack install Chart-diagrams
 stack install Chart-cairo
 ```
@@ -115,7 +115,7 @@ To be able to display charts in ghci you'll need imgcat.
 
 ### Mac OS X
 
-```
+```haskell
 brew tap eddieantonio/eddieantonio
 brew install imgcat
 ```
@@ -130,7 +130,7 @@ For more information visit [imgcat's repository](https://github.com/eddieantonio
 2. `stack build`
 3. Place the following in your `.ghci` file. If you're using stack you can put this file at the root of your project.
 
-```
+```haskell
 import Text.Display
 
 :set -interactive-print=Text.Display.dPrint
