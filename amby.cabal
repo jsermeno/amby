@@ -1,5 +1,5 @@
 name:                amby
-version:             0.2.1
+version:             0.3.1
 synopsis:            Statistical data visualization
 description:         <<https://travis-ci.org/jsermeno/amby.svg?branch=master>>
                      <<https://img.shields.io/badge/language-Haskell-blue.svg>>
