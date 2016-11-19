@@ -1,6 +1,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE FlexibleInstances #-}
 module Amby.Types
   ( AmbyContainer(..)
   , AmbyState
@@ -33,15 +34,6 @@ data AmbyState = AmbyState
   , _asSize :: (Int, Int)
   }
 
-instance Default AmbyState where
-  def = AmbyState
-    { _asThemeState = def
-    , _asLayoutState = do
-      setColors (getColorCycle def)
-      setThemeStyles def
-    , _asSize = _fo_size def
-    }
-
 $( makeLenses ''AmbyState)
 
 type AmbyChart a = State AmbyState a
@@ -49,6 +41,7 @@ type AmbyChart a = State AmbyState a
 class AmbyContainer c a | c -> a where
   plot :: c -> c -> AmbyChart ()
   plotEq :: c -> (a -> a) -> AmbyChart ()
+  distPlot :: c -> AmbyChart ()
 
 getLayout :: AmbyState -> EC (Layout Double Double) ()
 getLayout s = s ^. asLayoutState
@@ -94,7 +87,31 @@ ylim rs = do
     layout_y_axis . laxis_generate .= scaledAxis def rs
 
 size :: (Int, Int) -> AmbyChart ()
-size rs = do
-  l <- use asSize
-  asSize .= rs
+size rs = asSize .= rs
+
+--------------------
+-- Default instances
+--------------------
+
+instance Default AmbyState where
+  def = AmbyState
+    { _asThemeState = def
+    , _asLayoutState = do
+      setColors (getColorCycle def)
+      setThemeStyles def
+    , _asSize = _fo_size def
+    }
+
+instance Default (PlotHist x Double) where
+  def = PlotHist
+    { _plot_hist_bins = 20
+    , _plot_hist_title       = ""
+    , _plot_hist_values      = []
+    , _plot_hist_no_zeros    = False
+    , _plot_hist_range       = Nothing
+    , _plot_hist_drop_lines  = False
+    , _plot_hist_line_style  = def
+    , _plot_hist_fill_style  = def
+    , _plot_hist_norm_func   = (\a b -> fromIntegral b / a)
+    }
 

@@ -39,10 +39,12 @@ saveAndDisplayIO ioAction = unsafePerformIO $ do
   catch readImg cHandler
   where
     readImg = do
-      (ec, stdout, stderr) <- readProcessWithExitCode "imgcat" [Plot.cairoDefSave] ""
-      if | (ExitFailure code) <- ec -> return (mkDtStr "Unable to display chart.")
+      (ec, stdout, _) <- readProcessWithExitCode "imgcat" [Plot.cairoDefSave] ""
+      if | (ExitFailure _) <- ec -> return (mkDtStr "Unable to display chart.")
          | otherwise -> return (mkDtStr stdout)
     cHandler e
-      | Just (e :: SomeException) <- fromException e =
+      | Just (_ :: SomeException) <- fromException e =
         return $ mkDt "Could not find imgcat executable."
+      | otherwise =
+        return $ mkDt "Unknown display error."
 

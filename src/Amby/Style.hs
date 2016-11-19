@@ -27,7 +27,7 @@ roundAxisData axisData = axisData & axis_labels %~ go
     go xs = map go' xs
     go' xs = xs
         & mapped . _2
-        %~ \x -> case readMay x of
+        %~ \x -> case readMay x :: Maybe Double of
           Just a -> showFFloat (Just precision) a ""
           Nothing -> x
       where
@@ -48,7 +48,8 @@ scaledPaddedAxis axisPoints = defaultAxis
       | length xs < 1 = error "Not enough grid points"
       | otherwise = (head xs - spacing, last xs + spacing)
       where
-        getSpacing (x:y:xs) = y - x
+        getSpacing (x:y:_) = y - x
+        getSpacing _ = 0
         spacing = getSpacing xs
     defaultAxis = autoAxis axisPoints
     (gridMin, gridMax) = getGridLimits (defaultAxis ^. axis_grid)
@@ -58,7 +59,7 @@ countAfterDecimal xs = case L.findIndex (== '.') xs of
   Nothing -> 0
   Just idx -> (length xs - 1) - idx
 
-setThemeStyles :: Theme -> EC (Layout Double Double) ()
+setThemeStyles :: Theme -> EC (Layout x y) ()
 setThemeStyles theme = do
   layout_background .= (FillStyleSolid $ getBgColor theme)
   layout_plot_background .= Just (FillStyleSolid $ getPlotBgColor theme)
