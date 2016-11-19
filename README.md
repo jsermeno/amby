@@ -10,7 +10,7 @@
 
 A statistics visualization library built on top of [Chart](https://github.com/timbod7/haskell-chart) inspired by [Seaborn](https://github.com/mwaskom/seaborn). Amby provides a high level interface to quickly display attractive visualizations. Amby also provides tools to display Charts from both Amby and the Chart package within GHCi.
 
-## Usage
+## Basics
 
 ```haskell
 λ> import qualified Amby as Am
@@ -28,13 +28,28 @@ Here's how you might plot the standard normal distribution.
 
 <img src="https://cloud.githubusercontent.com/assets/197051/19674286/a8a8e3f6-9a4c-11e6-9bdf-2a67b6d46660.png" alt="normal distribution plot" width="400" height="300">
 
-### Interactivity
+## Plot distributions
 
-Amby allows you to display charts directly inside ghci. This requires two things. The [`imgcat`](https://github.com/eddieantonio/imgcat#Build) executable, and the [`pretty-display`](https://github.com/jsermeno/pretty-display) package. See below for instructions on how install `imgcat` and setup `pretty-display`. This has been tested on Mac OS X. Amby provides `Display` instances for `AmbyChart ()` and `EC (Layout Double Double) ()`.
+```haskell
+λ> let sampleData = concat $ zipWith replicate [5, 4, 3, 7] [0..3]
+λ> Am.save $ Am.distPlot sampleData
+```
+
+<img src="https://cloud.githubusercontent.com/assets/197051/20458700/b0f45c84-ae79-11e6-8995-dc93cf41bac3.png" alt="distplot" width="400" height="300">
+
+## Rendering
+
+There are several ways to render plots.
+
+First, Amby provides the helper functions `save` and `saveSvg` that will save a graph to the file `.__amby.png` and `.__amby.svg` respectively.
+
+Second, you can use any rendering methods that the underlying [Chart](https://github.com/timbod7/haskell-chart) library provides by converting an `AmbyChart ()` to a `EC (Layout Double Double) ()` with the `getEC` function.
+
+Third—if you have a terminal that supports images such as iTerm2—you can display charts directly inside the GHCi repl. Just install the [`imgcat`](https://github.com/eddieantonio/imgcat#Build) executable, and the [`pretty-display`](https://github.com/jsermeno/pretty-display) library. See [below](https://github.com/jsermeno/amby#dependencies) for further installation instructions.
 
 <img src="https://cloud.githubusercontent.com/assets/197051/20401530/36e64424-acc7-11e6-889a-a664b4de9f82.png" alt="terminal example" width="637" height="524">
 
-### Plot graph using equations
+## Plot graph using equations
 
 You can also specify graphs using a domain and an equation.
 
@@ -44,7 +59,7 @@ You can also specify graphs using a domain and an equation.
 
 <img src="https://cloud.githubusercontent.com/assets/197051/19674456/eaff0d42-9a4d-11e6-9560-e41f64514fb9.png" alt="clean theme equation plot" width="400" height="300">
 
-### Multiple container types
+## Multiple container types
 
 Plotting functions work on both lists and generic vectors of doubles.
 
@@ -53,7 +68,7 @@ Plotting functions work on both lists and generic vectors of doubles.
 λ> Am.save $ Am.plotEq (Am.linspace 0 4 4000) sqrt
 ```
 
-### Combine graphs using do notation
+## Combine graphs using do notation
 
 ```haskell
 λ> import Statistics.Distribution.Beta as Stats
@@ -78,11 +93,13 @@ Plotting functions work on both lists and generic vectors of doubles.
 
 To use amby you'll first need to install Chart and gtk2hs if you don't already have them.
 
-### Mac OS X
+### Chart and Gtk2Hs
+
+***Mac OS X***
 
 Here are the instructions I used to install Chart and gtk2hs on OS X El Capitan with stack.
 
-```haskell
+```sh
 stack install Chart-diagrams
 brew cask install xquartz
 brew install glib cairo gtk gettext fontconfig freetype
@@ -90,7 +107,7 @@ brew install glib cairo gtk gettext fontconfig freetype
 
 Add the following environment variable `export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig` to `.bashrc` or similar file.
 
-```haskell
+```sh
 stack install alex happy
 stack install gtk2hs-buildtools
 stack install glib
@@ -98,33 +115,33 @@ stack install -- gtk --flag gtk:have-quartz-gtk
 stack install Chart-cairo
 ```
 
-### Linux and Windows
+***Linux and Windows***
 
 Instructions for installing gtk2hs on Linux and Windows can be found [here](https://wiki.haskell.org/Gtk2Hs/Installation).
 
 Likewise, run
 
-```haskell
+```sh
 stack install Chart-diagrams
 stack install Chart-cairo
 ```
 
-## Imgcat
+### Imgcat
 
-To be able to display charts in ghci you'll need imgcat.
+To be able to display charts in ghci with a terminal such as iTerm2 you'll need `imgcat` and `pretty-display`.
 
-### Mac OS X
+**Mac OS X**
 
-```haskell
+```sh
 brew tap eddieantonio/eddieantonio
 brew install imgcat
 ```
 
-### Linux and Windows
+**Linux and Windows**
 
 For more information visit [imgcat's repository](https://github.com/eddieantonio/imgcat#Build)
 
-## pretty-display
+### pretty-display
 
 1. Add `pretty-display` to your cabal file.
 2. `stack build`
@@ -139,3 +156,13 @@ import Text.Display
 ```
 
 4. Restart ghci.
+
+## Other tips
+
+### Auto-reload files
+
+If using the 'save' or 'saveSvg' functions because your terminal is unable to display images within GHCi you can use a tool such as [entr](https://github.com/clibs/entr) to run a command like `open` whenever the file is saved.
+
+```sh
+ls -d __amby.png | entr -r open /_
+```
