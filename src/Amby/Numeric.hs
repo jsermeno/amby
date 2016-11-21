@@ -50,11 +50,6 @@ contDistrRange :: (ContDistr d) => d -> U.Vector Double -> U.Vector Double
 contDistrRange d x = U.map (density d) x
 
 -- | @linspace s e n@ generates 'n' evenly spaced values between ['s', 'e'].
---
--- Examples:
---
--- >>> linspace 0 5 6
--- ...[0.0,1.0,2.0,3.0,4.0,5.0]
 linspace :: Double -> Double -> Int -> U.Vector Double
 linspace start stop num
   | num < 0 = error ("Number of samples, " ++ show num ++ ", must be non-negative.")
@@ -69,11 +64,6 @@ linspace start stop num
 -- 'arange' is the equivalent of haskell's range notation except that it generates
 -- a 'Vector'. As a result, the last element may be greater than less than, or
 -- greater than the stop point.
---
--- Examples:
---
--- >>> arange 0 5 1
--- ...[0.0,1.0,2.0,3.0,4.0,5.0]
 arange :: Double -> Double -> Double -> U.Vector Double
 arange start stop step = U.fromList [start,(start + step)..stop]
 
