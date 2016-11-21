@@ -37,11 +37,11 @@ resolver: lts-7.5
 # will not be run. This is useful for tweaking upstream packages.
 packages:
 - '.'
-- location:
-    git: https://github.com/jsermeno/haskell-chart.git
-    commit: dcc4c6932eec5218072f90413368bc59352b878f
-  subdirs:
-  - chart
+# - location:
+#     git: https://github.com/jsermeno/haskell-chart.git
+#     commit: dcc4c6932eec5218072f90413368bc59352b878f
+#   subdirs:
+#   - chart
 
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)

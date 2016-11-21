@@ -11,8 +11,12 @@ module Amby
   , module Amby.Numeric
   , module Amby.Types
   , module Amby.Plot
-  ,
+
+  -- * Lens operators
+  , (.=)
   ) where
+
+import Graphics.Rendering.Chart.Easy ((.=))
 
 import Amby.Types
 import Amby.Numeric
