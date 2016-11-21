@@ -19,8 +19,14 @@ module Amby.Types
   , getLayout
   , getSize
   , putLayout
+  , linewidth
+  , histLinewidth
+  , kdeLinewidth
+  , rugLinewidth
 
   -- * Plot options
+  , PlotOpts
+  , PlotEqOpts
   , DistPlotOpts
   , KdePlotOpts
   , RugPlotOpts
@@ -30,12 +36,14 @@ module Amby.Types
   , hist
   , rug
   , rugHeight
+  , cut
   , shade
   , kde
   , axis
   , height
   , gridsize
   , bw
+  , color
   )
   where
 
@@ -55,23 +63,42 @@ import Amby.Style
 -- Parameter option types
 -----------------------------------
 
-data Axis = X | Y deriving (Show, Eq)
+data Axis = XAxis | YAxis deriving (Show, Eq)
 data Bandwidth = Scott | BwScalar Double deriving (Show, Eq)
+
+data PlotOpts = PlotOpts
+  { _plotOptsColor :: AmbyColor
+  , _plotOptsLinewidth :: Double
+  } deriving (Show)
+makeFields ''PlotOpts
+
+data PlotEqOpts = PlotEqOpts
+  { _plotEqOptsColor :: AmbyColor
+  , _plotEqOptsLinewidth :: Double
+  } deriving (Show)
+makeFields ''PlotEqOpts
 
 data DistPlotOpts = DistPlotOpts
   { _distPlotOptsRug :: Bool
-  , _distPlotOptsHist :: Bool
   , _distPlotOptsKde :: Bool
+  , _distPlotOptsHist :: Bool
+  , _distPlotOptsColor :: AmbyColor
+
+  -- hist opts
+  , _distPlotOptsHistLinewidth :: Double
   , _distPlotOptsBins :: Int
 
   -- kde opts
   , _distPlotOptsShade :: Bool
   , _distPlotOptsBw :: Bandwidth
+  , _distPlotOptsCut :: Double
   , _distPlotOptsAxis :: Axis
   , _distPlotOptsGridsize :: Int
+  , _distPlotOptsKdeLinewidth :: Double
 
   -- rug opts
   , _distPlotOptsRugHeight :: Double
+  , _distPlotOptsRugLinewidth :: Double
   } deriving (Show)
 makeFields ''DistPlotOpts
 
@@ -80,12 +107,17 @@ data KdePlotOpts = KdePlotOpts
   , _kdePlotOptsBw :: Bandwidth
   , _kdePlotOptsAxis :: Axis
   , _kdePlotOptsGridsize :: Int
+  , _kdePlotOptsColor :: AmbyColor
+  , _kdePlotOptsLinewidth :: Double
+  , _kdePlotOptsCut :: Double
   } deriving (Show)
 makeFields ''KdePlotOpts
 
 data RugPlotOpts = RugPlotOpts
   { _rugPlotOptsHeight :: Double
   , _rugPlotOptsAxis :: Axis
+  , _rugPlotOptsColor :: AmbyColor
+  , _rugPlotOptsLinewidth :: Double
   }
 makeFields ''RugPlotOpts
 
@@ -104,8 +136,10 @@ type AmbyChart a = State AmbyState a
 
 class AmbyContainer c where
   type Value c :: *
-  plot :: c -> c -> AmbyChart ()
-  plotEq :: c -> (Value c -> Value c) -> AmbyChart ()
+  plot :: c -> c -> State PlotOpts () -> AmbyChart ()
+  plot' :: c -> c -> AmbyChart ()
+  plotEq :: c -> (Value c -> Value c) -> State PlotEqOpts () -> AmbyChart ()
+  plotEq' :: c -> (Value c -> Value c) -> AmbyChart ()
   distPlot :: c -> State DistPlotOpts () -> AmbyChart ()
   distPlot' :: c -> AmbyChart ()
   kdePlot :: c -> State KdePlotOpts () -> AmbyChart ()
@@ -142,7 +176,7 @@ theme t = do
   l <- use asLayoutState
   asLayoutState .= do
     l
-    Chart.setColors (getColorCycle t)
+    Chart.setColors $ t ^. colorCycle
     setThemeStyles t
   asThemeState .= t
 
@@ -151,14 +185,14 @@ xlim rs = do
   l <- use asLayoutState
   asLayoutState .= do
     l
-    Chart.layout_x_axis . Chart.laxis_generate .= Chart.scaledAxis def rs
+    Chart.layout_x_axis . Chart.laxis_generate .= scaledAxisCustom def rs
 
 ylim :: (Double, Double) -> AmbyChart ()
 ylim rs = do
   l <- use asLayoutState
   asLayoutState .= do
     l
-    Chart.layout_y_axis . Chart.laxis_generate .= Chart.scaledAxis def rs
+    Chart.layout_y_axis . Chart.laxis_generate .= scaledAxisCustom def rs
 
 size :: (Int, Int) -> AmbyChart ()
 size rs = asSize .= rs
@@ -171,7 +205,7 @@ instance Default AmbyState where
   def = AmbyState
     { _asThemeState = def
     , _asLayoutState = do
-      Chart.setColors (getColorCycle def)
+      Chart.setColors $ (def :: Theme) ^. colorCycle
       setThemeStyles def
     , _asSize = _fo_size def
     }
@@ -190,19 +224,36 @@ instance Default (PlotHist x Double) where
     , _plot_hist_vertical    = False
     }
 
+instance Default PlotOpts where
+  def = PlotOpts
+    { _plotOptsColor = DefaultColor
+    , _plotOptsLinewidth = 2.5
+    }
+
+instance Default PlotEqOpts where
+  def = PlotEqOpts
+    { _plotEqOptsColor = DefaultColor
+    , _plotEqOptsLinewidth = 2.5
+    }
+
 instance Default DistPlotOpts where
   def = DistPlotOpts
     { _distPlotOptsRug = False
     , _distPlotOptsHist = True
     , _distPlotOptsKde = True
     , _distPlotOptsBins = 0
+    , _distPlotOptsColor = DefaultColor
+    , _distPlotOptsHistLinewidth = 2.5
+    , _distPlotOptsAxis = XAxis
 
     , _distPlotOptsShade = False
     , _distPlotOptsBw = Scott
     , _distPlotOptsGridsize = 100
-    , _distPlotOptsAxis = X
+    , _distPlotOptsKdeLinewidth = 2.5
+    , _distPlotOptsCut = 3
 
     , _distPlotOptsRugHeight = 0.05
+    , _distPlotOptsRugLinewidth = 1.2
     }
 
 instance Default KdePlotOpts where
@@ -210,11 +261,16 @@ instance Default KdePlotOpts where
     { _kdePlotOptsShade = False
     , _kdePlotOptsBw = Scott
     , _kdePlotOptsGridsize = 100
-    , _kdePlotOptsAxis = X
+    , _kdePlotOptsAxis = XAxis
+    , _kdePlotOptsColor = DefaultColor
+    , _kdePlotOptsLinewidth = 2.5
+    , _kdePlotOptsCut = 3
     }
 
 instance Default RugPlotOpts where
   def = RugPlotOpts
     { _rugPlotOptsHeight = 0.05
-    , _rugPlotOptsAxis = X
+    , _rugPlotOptsAxis = XAxis
+    , _rugPlotOptsColor = DefaultColor
+    , _rugPlotOptsLinewidth = 1.2
     }
