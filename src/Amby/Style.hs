@@ -3,6 +3,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE CPP #-}
 module Amby.Style
   ( setThemeStyles
   , scaledAxisCustom
@@ -66,9 +67,19 @@ roundAxisData axisData = axisData & Chart.axis_labels %~ go
 -- | Take from the 'Chart' package with minor modifications.
 scaledAxisCustom :: RealFloat a => Chart.LinearAxisParams a -> (a, a)
                  -> Chart.AxisFn a
-scaledAxisCustom lap rs@(minV,maxV) ps0 = makeAxisCustom' realToFrac realToFrac
-    (_la_labelf lap) (labelvs, tickvs, gridvs) rs
+scaledAxisCustom lap rs@(minV,maxV) ps0 = makeAxisCustom'
+    realToFrac
+    realToFrac
+    labelFn
+    (labelvs, tickvs, gridvs)
+    rs
   where
+#if MIN_VERSION_Chart(1,7,0)
+    labelFn   = _la_labelf lap
+#else
+    labelFn   = map (_la_labelf lap)
+#endif
+
     ps        = filter isValidNumber ps0
     range []  = (0,1)
     range _   | minV == maxV = if minV==0 then (-1,1) else

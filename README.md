@@ -134,7 +134,7 @@ Third—if you have a terminal that supports images such as iTerm2—you can dis
 
 <img src="https://cloud.githubusercontent.com/assets/197051/20501861/9933bc5c-b009-11e6-91b8-3c7ddbf72353.png" alt="terminal example" width="400" height="300">
 
-## Plot graph using equations
+## Plotting equations
 
 You can also specify graphs using a domain and an equation.
 

@@ -1,5 +1,6 @@
-{-# LANGUAGE TemplateHaskell, FlexibleInstances #-}
-
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE CPP #-}
 module Amby.Compatibility.HistogramPlot
   ( -- * Histograms
     PlotHist (..)
@@ -37,6 +38,11 @@ import Data.Colour.Names (blue)
 import Data.Colour.SRGB (sRGB)
 
 import Amby.Compatibility.HistogramNumeric
+
+#if MIN_VERSION_Chart(1,7,0)
+#else
+type BackendProgram a = ChartBackend a
+#endif
 
 data PlotHist x y = PlotHist
     { -- | Plot title
