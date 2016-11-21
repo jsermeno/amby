@@ -11,8 +11,8 @@ matrix:
   fast_finish: true
   include:
   - env: BUILD=cabal GHCVER=7.10.3 CABALVER=1.22
-  - compiler: ": #GHC 7.10.3"
-  - addons: {apt: {packages: [cabal-install-1.22,ghc-7.10.3,happy-1.19.5,alex-3.1.7,libgtk-3-dev,libghc-gtk-dev], sources: [hvr-ghc]}}
+    compiler: ": #GHC 7.10.3"
+    addons: {apt: {packages: [cabal-install-1.22,ghc-7.10.3,happy-1.19.5,alex-3.1.7,libgtk-3-dev,libghc-gtk-dev], sources: [hvr-ghc]}}
   - env: BUILD=cabal GHCVER=8.0.1 CABALVER=1.24
     compiler: ": #GHC 8.0.1"
     addons: {apt: {packages: [cabal-install-1.24,ghc-8.0.1,happy-1.19.5,alex-3.1.7,libgtk-3-dev,libghc-gtk-dev], sources: [hvr-ghc]}}
@@ -30,12 +30,12 @@ matrix:
     addons: {apt: {packages: [libgmp-dev,ghc-7.10.3,happy-1.19.5,alex-3.1.7,libgtk-3-dev,libghc-gtk-dev], sources: [hvr-ghc]}}
 
   - env: BUILD=stack ARGS="--resolver lts-3" GHCVER=7.10.2
-  - compiler: ": #stack 7.10.2"
-  - addons: {apt: {packages: [libgmp-dev,ghc-7.10.2,happy-1.19.5,alex-3.1.7,libgtk-3-dev,libghc-gtk-dev], sources: [hvr-ghc]}}
+    compiler: ": #stack 7.10.2"
+    addons: {apt: {packages: [libgmp-dev,ghc-7.10.2,happy-1.19.5,alex-3.1.7,libgtk-3-dev,libghc-gtk-dev], sources: [hvr-ghc]}}
 
   - env: BUILD=stack ARGS="--resolver lts-6" GHCVER=7.10.3
-  - compiler: ": #stack 7.10.3"
-  - addons: {apt: {packages: [libgmp-dev,ghc-7.10.3,happy-1.19.5,alex-3.1.7,libgtk-3-dev,libghc-gtk-dev], sources: [hvr-ghc]}}
+    compiler: ": #stack 7.10.3"
+    addons: {apt: {packages: [libgmp-dev,ghc-7.10.3,happy-1.19.5,alex-3.1.7,libgtk-3-dev,libghc-gtk-dev], sources: [hvr-ghc]}}
 
   # Nightly builds are allowed to fail
   - env: BUILD=stack ARGS="--resolver nightly" GHCVER=nightly
