@@ -25,9 +25,6 @@ The simplest plotting function is `plot`. Here's how you might plot the standard
 
 <img src="https://cloud.githubusercontent.com/assets/197051/20501102/6000a114-b006-11e6-91d7-e4c5f4ffaf47.png" alt="normal distribution plot" width="400" height="300">
 
-```haskell
-```
-
 ## Plotting univariate distributions
 
 This tutorial mirrors the first section of [Seaborn](http://seaborn.pydata.org/tutorial/distributions.html)'s python tutorial.
@@ -76,14 +73,15 @@ A kernel density estimation is a summation of several normal distributions, each
 λ> import qualified Data.Vector.Unboxed as U
 λ> let bandwidth = 1.059 * Stats.stdDev z * fromIntegral (U.length z) ** ((-1) / 5)
 λ> let xs = linspace (-6) 6 200
+λ> let a = U.take 30 z
 
-λ> let foldFn _ b = plot' xs $ contDistrRange (Stats.normalDistr b bandwidth) xs
-λ> U.foldM foldFn () z >> rugPlot z (color .= K >> linewidth .= 3) >> xlim (-4, 4)
+λ> let foldFn _ b = plot xs (contDistrRange (Stats.normalDistr b bandwidth) xs)
+λ> U.foldM foldFn () a >> rugPlot a (color .= K >> linewidth .= 3) >> xlim (-4, 4)
 ```
 
-<img src="https://cloud.githubusercontent.com/assets/197051/20501068/3923c256-b006-11e6-9763-899a1fede4fd.png" alt="Kernel density estimation explanation" width="400" height="300">
+<img src="https://cloud.githubusercontent.com/assets/197051/20501580/7c76344c-b008-11e6-8666-28b6e5b18cca.png" alt="Kernel density estimation explanation" width="400" height="300">
 
-The resulting curve is normalized so the area under it is equal to 1. This is what is provide by the `kdePlot` function.
+The resulting curve is normalized so the area under it is equal to 1. This is what is provide with the `kdePlot` function.
 
 ```haskell
 λ> kdePlot z $ shade .= True
@@ -113,11 +111,28 @@ There are several ways to render plots.
 
 First, Amby provides the helper functions `save` and `saveSvg` that will save a graph to the file `.__amby.png` and `.__amby.svg` respectively. `save` uses the Cairo backend, while `saveSvg` uses the Diagrams backend. The Diagrams backend produces better looking charts, but is slower.
 
+```haskell
+λ> save $ distPlot' z
+λ> saveSvg $ distPlot' z
+```
+
 Second, you can use any rendering methods that the underlying [Chart](https://github.com/timbod7/haskell-chart) library provides by converting an `AmbyChart ()` to a `EC (Layout Double Double) ()` with the `getEC` function.
 
-Third—if you have a terminal that supports images such as iTerm2—you can display charts directly inside the GHCi repl. Just install the [`imgcat`](https://github.com/eddieantonio/imgcat#Build) executable, and the [`pretty-display`](https://github.com/jsermeno/pretty-display) library. See [below](https://github.com/jsermeno/amby#dependencies) for further installation instructions.
+```haskell
+λ> import Graphics.Rendering.Chart.Easy (def)
+λ> import Graphics.Rendering.Chart.Backend.Cairo as Cairo
+λ> import Graphics.Rendering.Chart.Backend.Diagrams as Diagrams
+λ> Cairo.toFile def "myFile.png" $ getEC $ distPlot' z
+λ> Diagrams.toFile def "myFile.svg" $ getEC $ distPlot' z
+```
 
-<img src="https://cloud.githubusercontent.com/assets/197051/20401530/36e64424-acc7-11e6-889a-a664b4de9f82.png" alt="terminal example" width="400" height="300">
+Third—if you have a terminal that supports images such as iTerm2—you can display charts directly inside the GHCi repl. Just install the [`imgcat`](https://github.com/eddieantonio/imgcat#Build) executable, and the [`pretty-display`](https://github.com/jsermeno/pretty-display) library. See [here](https://github.com/jsermeno/amby#dependencies) for further installation instructions.
+
+```haskell
+λ> distPlot' z
+```
+
+<img src="https://cloud.githubusercontent.com/assets/197051/20501861/9933bc5c-b009-11e6-91b8-3c7ddbf72353.png" alt="terminal example" width="400" height="300">
 
 ## Plot graph using equations
 
