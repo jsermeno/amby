@@ -54,7 +54,7 @@ contDistrRange d x = U.map (density d) x
 -- Examples:
 --
 -- >>> linspace 0 5 6
--- [0.0,1.0,2.0,3.0,4.0,5.0]
+-- ...[0.0,1.0,2.0,3.0,4.0,5.0]
 linspace :: Double -> Double -> Int -> U.Vector Double
 linspace start stop num
   | num < 0 = error ("Number of samples, " ++ show num ++ ", must be non-negative.")
@@ -73,7 +73,7 @@ linspace start stop num
 -- Examples:
 --
 -- >>> arange 0 5 1
--- [0.0,1.0,2.0,3.0,4.0,5.0]
+-- ...[0.0,1.0,2.0,3.0,4.0,5.0]
 arange :: Double -> Double -> Double -> U.Vector Double
 arange start stop step = U.fromList [start,(start + step)..stop]
 
