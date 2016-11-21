@@ -4,81 +4,152 @@
 [![Haskell Programming Language](https://img.shields.io/badge/language-Haskell-blue.svg)](Haskell.org)
 [![BSD3 License](http://img.shields.io/badge/license-BSD3-brightgreen.svg)](tl;dr Legal: BSD3)
 
-<img src="https://cloud.githubusercontent.com/assets/197051/19674286/a8a8e3f6-9a4c-11e6-9bdf-2a67b6d46660.png" alt="normal distribution plot" width="200" height="150">
-<img src="https://cloud.githubusercontent.com/assets/197051/19674456/eaff0d42-9a4d-11e6-9560-e41f64514fb9.png" alt="clean theme equation plot" width="200" height="150">
-<img src="https://cloud.githubusercontent.com/assets/197051/19674436/cfa79db6-9a4d-11e6-84b3-ba5a6000a41b.png" alt="multiple beta distributions" width="200" height="150">
+<img src="https://cloud.githubusercontent.com/assets/197051/20501027/02c44a82-b006-11e6-9589-91dd9fe141c0.png" alt="normal distribution plot" width="200" height="150">
+<img src="https://cloud.githubusercontent.com/assets/197051/20501025/0182f9de-b006-11e6-8a38-24b081b9892c.png" alt="clean theme equation plot" width="200" height="150">
+<img src="https://cloud.githubusercontent.com/assets/197051/20501068/3923c256-b006-11e6-9763-899a1fede4fd.png" alt="multiple beta distributions" width="200" height="150">
 
 A statistics visualization library built on top of [Chart](https://github.com/timbod7/haskell-chart) inspired by [Seaborn](https://github.com/mwaskom/seaborn). Amby provides a high level interface to quickly display attractive visualizations. Amby also provides tools to display Charts from both Amby and the Chart package within GHCi.
 
-## Basics
+## Plotting basics
+
+The simplest plotting function is `plot`. Here's how you might plot the standard normal distribution.
 
 ```haskell
-λ> import qualified Amby as Am
-```
-
-Here's how you might plot the standard normal distribution.
-
-```haskell
+λ> import Amby
 λ> import qualified Statistics.Distribution.Normal as Stats
-λ> let d = Stats.standard
-λ> let x = Am.contDistrDomain d 10000
-λ> let y = Am.contDistrRange d x
-λ> Am.save $ Am.plot x y
+
+λ> let x = contDistrDomain Stats.standard 10000
+λ> let y = contDistrRange Stats.standard x
+λ> plot' x y
 ```
 
-<img src="https://cloud.githubusercontent.com/assets/197051/19674286/a8a8e3f6-9a4c-11e6-9bdf-2a67b6d46660.png" alt="normal distribution plot" width="400" height="300">
-
-## Plot distributions
+<img src="https://cloud.githubusercontent.com/assets/197051/20501102/6000a114-b006-11e6-91d7-e4c5f4ffaf47.png" alt="normal distribution plot" width="400" height="300">
 
 ```haskell
-λ> let sampleData = concat $ zipWith replicate [5, 4, 3, 7] [0..3]
-λ> Am.save $ Am.distPlot sampleData
 ```
 
-<img src="https://cloud.githubusercontent.com/assets/197051/20458700/b0f45c84-ae79-11e6-8995-dc93cf41bac3.png" alt="distplot" width="400" height="300">
+## Plotting univariate distributions
+
+This tutorial mirrors the first section of [Seaborn](http://seaborn.pydata.org/tutorial/distributions.html)'s python tutorial.
+
+Use `distplot` to view univariate distributions. By default this will create a histogram and fit a kernel density estimate. Notice the tick mark `'` after `distPlot'`. This indicates a function that accepts no optional arguments.
+
+```haskell
+λ> z <- random Stats.standard 100
+λ> distPlot' z
+```
+
+<img src="https://cloud.githubusercontent.com/assets/197051/20501027/02c44a82-b006-11e6-9589-91dd9fe141c0.png" alt="distplot" width="400" height="300">
+
+### Histograms
+
+The `distPlot` histogram automatically chooses a reasonable number of bins and counts the data points in each bin. To view the position of each data point you can add a rugplot.
+
+```haskell
+λ> distPlot z $ kde .= False >> rug .= True
+```
+
+<img src="https://cloud.githubusercontent.com/assets/197051/20501031/05564e1c-b006-11e6-9e9f-d85782268979.png" alt="histogram with rugplot" width="400" height="300">
+
+Choosing a different number of bins for the histogram can reveal different patterns in the data.
+
+```haskell
+λ> distPlot z $ bins .= 20 >> kde .= False >> rug .= True
+```
+
+<img src="https://cloud.githubusercontent.com/assets/197051/20501028/0409113e-b006-11e6-84b4-c97a6a993656.png" alt="histogram with more bins" width="400" height="300">
+
+### Kernel density estimation
+
+Kernel density estimation can be a useful too for plotting the shape of the distribution.
+
+```haskell
+λ> distplot z $ hist .= False >> rug .= True
+```
+
+<img src="https://cloud.githubusercontent.com/assets/197051/20501100/5db3604a-b006-11e6-964b-4a118bacd9cb.png" alt="Kernel density estimation" width="400" height="300">
+
+A kernel density estimation is a summation of several normal distributions, each centered on each of the data points.
+
+```haskell
+λ> import qualified Statistics.Sample as Stats
+λ> import qualified Data.Vector.Unboxed as U
+λ> let bandwidth = 1.059 * Stats.stdDev z * fromIntegral (U.length z) ** ((-1) / 5)
+λ> let xs = linspace (-6) 6 200
+
+λ> let foldFn _ b = plot' xs $ contDistrRange (Stats.normalDistr b bandwidth) xs
+λ> U.foldM foldFn () z >> rugPlot z (color .= K >> linewidth .= 3) >> xlim (-4, 4)
+```
+
+<img src="https://cloud.githubusercontent.com/assets/197051/20501068/3923c256-b006-11e6-9763-899a1fede4fd.png" alt="Kernel density estimation explanation" width="400" height="300">
+
+The resulting curve is normalized so the area under it is equal to 1. This is what is provide by the `kdePlot` function.
+
+```haskell
+λ> kdePlot z $ shade .= True
+```
+
+<img src="https://cloud.githubusercontent.com/assets/197051/20501070/3aca17c2-b006-11e6-8b7e-3258d20e6c84.png" alt="Kernel density estimation" width="400" height="300">
+
+The bandwith (`bw`) parameter of the KDE controls how tightly the estimation is fit to the data, much like the bin size in a histogram. The default behaviour tries to guess a good value, but it may be helpful to try larger or smaller values.
+
+```haskell
+λ> kdePlot' z >> kdePlot z (bw .= BwScalar 0.2) >> kdePlot z (bw .= BwScalar 2)
+```
+
+<img src="https://cloud.githubusercontent.com/assets/197051/20501065/361df4aa-b006-11e6-9f6d-94fb6ebd2fef.png" alt="Kernel density estimation bandwidth" width="400" height="300">
+
+You can also control how far past the range of your dataset the curve is drawn. How this only influences how the curve is drawn, not how it is fit.
+
+```haskell
+λ> kdePlot z (cut .= 0 >> shade .= True) >> rugPlot' z
+```
+
+<img src="https://cloud.githubusercontent.com/assets/197051/20501066/37c7f0ee-b006-11e6-91b8-b951cafa4100.png" alt="Kernel density estimation cut" width="400" height="300">
 
 ## Rendering
 
 There are several ways to render plots.
 
-First, Amby provides the helper functions `save` and `saveSvg` that will save a graph to the file `.__amby.png` and `.__amby.svg` respectively.
+First, Amby provides the helper functions `save` and `saveSvg` that will save a graph to the file `.__amby.png` and `.__amby.svg` respectively. `save` uses the Cairo backend, while `saveSvg` uses the Diagrams backend. The Diagrams backend produces better looking charts, but is slower.
 
 Second, you can use any rendering methods that the underlying [Chart](https://github.com/timbod7/haskell-chart) library provides by converting an `AmbyChart ()` to a `EC (Layout Double Double) ()` with the `getEC` function.
 
 Third—if you have a terminal that supports images such as iTerm2—you can display charts directly inside the GHCi repl. Just install the [`imgcat`](https://github.com/eddieantonio/imgcat#Build) executable, and the [`pretty-display`](https://github.com/jsermeno/pretty-display) library. See [below](https://github.com/jsermeno/amby#dependencies) for further installation instructions.
 
-<img src="https://cloud.githubusercontent.com/assets/197051/20401530/36e64424-acc7-11e6-889a-a664b4de9f82.png" alt="terminal example" width="637" height="524">
+<img src="https://cloud.githubusercontent.com/assets/197051/20401530/36e64424-acc7-11e6-889a-a664b4de9f82.png" alt="terminal example" width="400" height="300">
 
 ## Plot graph using equations
 
 You can also specify graphs using a domain and an equation.
 
 ```haskell
-λ> Am.save $ Am.plotEq [0,0.001..4] sqrt
+λ> plotEq' [0,0.001..4] sqrt
 ```
 
-<img src="https://cloud.githubusercontent.com/assets/197051/19674456/eaff0d42-9a4d-11e6-9560-e41f64514fb9.png" alt="clean theme equation plot" width="400" height="300">
+<img src="https://cloud.githubusercontent.com/assets/197051/20501101/5fe7abfa-b006-11e6-989d-f7c18524e02f.png" alt="clean theme equation plot" width="400" height="300">
 
 ## Multiple container types
 
 Plotting functions work on both lists and generic vectors of doubles.
 
 ```haskell
-λ> Am.save $ Am.plotEq [0,0.001..4] sqrt
-λ> Am.save $ Am.plotEq (Am.linspace 0 4 4000) sqrt
+λ> plotEq' [0,0.001..4] sqrt
+λ> plotEq' (linspace 0 4 4000) sqrt
 ```
 
 ## Combine graphs using do notation
 
 ```haskell
 λ> import Statistics.Distribution.Beta as Stats
+λ> :set +m
 λ> let plotBeta a b =
 λ|       let d = Stats.betaDistr a b
-λ|           x = Am.contDistrDomain d 10000
-λ|           y = Am.contDistrRange d x
-λ|       Am.plot x y
-λ> Am.save $ do
-λ|   Am.theme Am.cleanTheme
+λ|           x = contDistrDomain d 10000
+λ|           y = contDistrRange d x
+λ|       in plot' x y
+λ> do
+λ|   theme cleanTheme
 λ|   plotBeta 0.5 0.5
 λ|   plotBeta 5 1
 λ|   plotBeta 1 3
@@ -87,7 +158,7 @@ Plotting functions work on both lists and generic vectors of doubles.
 λ|   ylim (0.0, 2.5)
 ```
 
-<img src="https://cloud.githubusercontent.com/assets/197051/19674436/cfa79db6-9a4d-11e6-84b3-ba5a6000a41b.png" alt="multiple beta distributions" width="400" height="300">
+<img src="https://cloud.githubusercontent.com/assets/197051/20501025/0182f9de-b006-11e6-8a38-24b081b9892c.png" alt="multiple beta distributions" width="400" height="300">
 
 ## Dependencies
 
