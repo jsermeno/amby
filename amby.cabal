@@ -60,6 +60,7 @@ library
                      , data-default
                      -- 'Lens' package used as dependency of 'Chart'
                      , lens
+                     , mwc-random
   ghc-options:         -Wall -fno-warn-orphans -Werror
   default-language:    Haskell2010
 

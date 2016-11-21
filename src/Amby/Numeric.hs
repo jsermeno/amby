@@ -14,6 +14,7 @@ module Amby.Numeric
   , contDistrRange
   , linspace
   , arange
+  , random
 
   -- * Frequencies
   , scoreAtPercentile
@@ -27,7 +28,9 @@ import qualified Data.Vector.Generic as G
 import qualified Data.Vector.Unboxed as U
 import qualified Data.Vector as V
 import qualified Data.Vector.Algorithms.Intro as V
+
 import Statistics.Distribution
+import System.Random.MWC (withSystemRandom, asGenST)
 
 -- $setup
 -- >>> let demoData = V.fromList $ concat $ zipWith replicate [5, 4, 3, 7] [0..3]
@@ -73,6 +76,13 @@ linspace start stop num
 -- [0.0,1.0,2.0,3.0,4.0,5.0]
 arange :: Double -> Double -> Double -> U.Vector Double
 arange start stop step = U.fromList [start,(start + step)..stop]
+
+-- | Generates an unboxed vectors of random numbers from a distribution
+-- that is an instance of 'ContGen'. This function is meant for ease of use
+-- and is expensive.
+random :: (ContGen d) => d -> Int -> IO (U.Vector Double)
+random d n = withSystemRandom . asGenST $ \gen ->
+  U.replicateM n $ genContVar d gen
 
 ---------------------
 -- Frequencies
