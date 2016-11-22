@@ -47,6 +47,7 @@ import Amby.Types
 
 instance AmbyContainer (V.Vector Double) where
   type Value (V.Vector Double) = Double
+
   plot = plotVec
   plot' = plotVec'
   plotEq = plotEqVec
@@ -60,6 +61,7 @@ instance AmbyContainer (V.Vector Double) where
 
 instance AmbyContainer (U.Vector Double) where
   type Value (U.Vector Double) = Double
+
   plot = plotVec
   plot' = plotVec'
   plotEq = plotEqVec

@@ -12,7 +12,7 @@ A statistics visualization library built on top of [Chart](https://github.com/ti
 
 ## Plotting basics
 
-The simplest plotting function is `plot`. Here's how you might plot the standard normal distribution.
+The simplest plotting function is `plot'`. Here's how you might plot the standard normal distribution.
 
 ```haskell
 λ> import Amby
@@ -25,11 +25,13 @@ The simplest plotting function is `plot`. Here's how you might plot the standard
 
 <img src="https://cloud.githubusercontent.com/assets/197051/20501102/6000a114-b006-11e6-91d7-e4c5f4ffaf47.png" alt="normal distribution plot" width="400" height="300">
 
+Notice the tick mark `'` after `plot'`. This indicates a function that accepts no optional arguments.
+
 ## Plotting univariate distributions
 
 This tutorial mirrors the first section of [Seaborn](http://seaborn.pydata.org/tutorial/distributions.html)'s python tutorial.
 
-Use `distplot` to view univariate distributions. By default this will create a histogram and fit a kernel density estimate. Notice the tick mark `'` after `distPlot'`. This indicates a function that accepts no optional arguments.
+Use `distplot` to view univariate distributions. By default this will create a histogram and fit a kernel density estimate.
 
 ```haskell
 λ> z <- random Stats.standard 100
