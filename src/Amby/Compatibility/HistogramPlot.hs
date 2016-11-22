@@ -4,6 +4,7 @@
 module Amby.Compatibility.HistogramPlot
   ( -- * Histograms
     PlotHist (..)
+  , BackendProgram
   , histToPlot
   , defaultPlotHist
   , defaultFloatPlotHist

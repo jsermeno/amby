@@ -64,7 +64,9 @@ roundAxisData axisData = axisData & Chart.axis_labels %~ go
 -- Scaling
 ------------------------
 
--- | Take from the 'Chart' package with minor modifications.
+-- | Taken from the 'Chart' package with minor modifications.
+-- Needed to enforce 'xlim' and 'ylim' maximum and minimum limits.
+-- Default version snaps to next available grid position.
 scaledAxisCustom :: RealFloat a => Chart.LinearAxisParams a -> (a, a)
                  -> Chart.AxisFn a
 scaledAxisCustom lap rs@(minV,maxV) ps0 = makeAxisCustom'

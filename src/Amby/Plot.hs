@@ -145,11 +145,13 @@ plotEqVec' :: (G.Vector v Double, G.Vector v (Double, Double))
            => v Double -> (Double -> Double) -> AmbyChart ()
 plotEqVec' x fn = plotEqVec x fn $ return ()
 
-distPlotVec :: (G.Vector v Double) => v Double -> State DistPlotOpts ()
+distPlotVec :: (G.Vector v Double, G.Vector v (Double, Double))
+            => v Double -> State DistPlotOpts ()
             -> AmbyChart ()
 distPlotVec xs optsState = plotDistribution xs $ execState optsState def
 
-distPlotVec' :: (G.Vector v Double) => v Double -> AmbyChart ()
+distPlotVec' :: (G.Vector v Double, G.Vector v (Double, Double))
+             => v Double -> AmbyChart ()
 distPlotVec' xs = distPlotVec xs $ return ()
 
 kdePlotVec :: (G.Vector v Double) => v Double -> State KdePlotOpts ()
@@ -166,7 +168,7 @@ kdePlotVec xs optsState = do
 kdePlotVec' :: (G.Vector v Double) => v Double -> AmbyChart ()
 kdePlotVec' xs = kdePlotVec xs $ return ()
 
-rugPlotVec :: (G.Vector v Double)
+rugPlotVec :: (G.Vector v Double, G.Vector v (Double, Double))
            => v Double -> State RugPlotOpts ()
            -> AmbyChart ()
 rugPlotVec xs optsState = do
@@ -178,7 +180,7 @@ rugPlotVec xs optsState = do
   where
     opts = execState optsState def
 
-rugPlotVec' :: (G.Vector v Double)
+rugPlotVec' :: (G.Vector v Double, G.Vector v (Double, Double))
             => v Double -> AmbyChart ()
 rugPlotVec' xs = rugPlotVec xs $ return ()
 
@@ -186,7 +188,8 @@ rugPlotVec' xs = rugPlotVec xs $ return ()
 -- Generic plotters
 --------------------------
 
-plotDistribution :: (G.Vector v Double) => v Double -> DistPlotOpts -> AmbyChart ()
+plotDistribution :: (G.Vector v Double, G.Vector v (Double, Double))
+                 => v Double -> DistPlotOpts -> AmbyChart ()
 plotDistribution xs opts = do
     layout <- takeLayout
     putLayout $ do
@@ -233,13 +236,19 @@ plotHist opts c numBins xs =
     plot_hist_fill_style . Chart.fill_color .= Colour.dissolve 0.4 c
     plot_hist_vertical .= (opts ^. axis == YAxis)
 
-plotRug :: (G.Vector v Double)
+plotRug :: forall v. (G.Vector v Double, G.Vector v (Double, Double))
         => AlphaColour Double -> v Double -> RugPlotOpts
         -> EC (Layout Double Double) ()
 plotRug c xs opts = do
       maxMay <- getPlotMaxHeightMay
       h <- calcRugHeight maxMay
-      G.foldM (plotSingleLine h) () xs
+      Chart.plot $ return $ Chart.Plot
+        { Chart._plot_render = renderPlotRug h
+        , Chart._plot_legend = [("", const $ return ())]
+        , Chart._plot_all_points = join (***) G.toList
+          $ G.unzip
+          $ G.concatMap (toPoints h) xs
+        }
       updatePlotHeight maxMay
     where
       getPlotMaxHeightMay :: EC (Layout Double Double) (Maybe Double)
@@ -250,14 +259,33 @@ plotRug c xs opts = do
           & maximumMay
           & return
 
+      toPoints :: Double -> Double -> v (Double, Double)
+      toPoints h x = if opts ^. axis == XAxis
+        then G.fromList [(x, 0), (x, h)]
+        else G.fromList [(0, x), (h, x)]
+
       calcRugHeight :: (Maybe Double) -> EC (Layout Double Double) Double
       calcRugHeight maxMay =
         return $ (Maybe.fromMaybe 1.0 maxMay) * (opts ^. height)
 
-      plotSingleLine :: Double -> () -> Double -> EC (Layout Double Double) ()
-      plotSingleLine h _ x = if opts ^. axis == XAxis
-        then plotLine c (opts ^. linewidth) [(x, 0), (x, h)]
-        else plotLine c (opts ^. linewidth)  [(0, x), (h, x)]
+      renderPlotRug :: Double -> Chart.PointMapFn Double Double
+                    -> BackendProgram ()
+      renderPlotRug h pmap =
+        Chart.withLineStyle lineStyle $ do
+          Chart.alignStrokePath (plotPath h pmap) >>= Chart.strokePath
+        where
+          lineStyle = def
+            & Chart.line_width .~ (opts ^. linewidth)
+            & Chart.line_color .~ c
+
+      plotPath :: Double -> Chart.PointMapFn Double Double -> Chart.Path
+      plotPath h pmap =
+          go (G.toList xs)
+        where
+          go [] = Chart.End
+          go [b] = Chart.MoveTo (pt b 0) $ Chart.LineTo (pt b h) $ Chart.End
+          go (b:rest) = Chart.MoveTo (pt b 0) $ Chart.LineTo (pt b h) $ go rest
+          pt x y = pmap (Chart.LValue x, Chart.LValue y)
 
       updatePlotHeight :: (Maybe Double)
                        -> EC (Layout Double Double) ()

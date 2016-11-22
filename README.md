@@ -81,7 +81,7 @@ A kernel density estimation is a summation of several normal distributions, each
 
 <img src="https://cloud.githubusercontent.com/assets/197051/20501580/7c76344c-b008-11e6-8666-28b6e5b18cca.png" alt="Kernel density estimation explanation" width="400" height="300">
 
-The resulting curve is normalized so the area under it is equal to 1. This is what is provide with the `kdePlot` function.
+The resulting curve is normalized so the area under it is equal to 1. This is what is provided with the `kdePlot` function.
 
 ```haskell
 λ> kdePlot z $ shade .= True
