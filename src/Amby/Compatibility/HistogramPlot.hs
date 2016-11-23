@@ -1,6 +1,9 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE CPP #-}
+--------------------------------------------
+-- TODO: Replace HistogramPlot and HistogramNumeric with optimized versions.
+--------------------------------------------
 module Amby.Compatibility.HistogramPlot
   ( -- * Histograms
     PlotHist (..)

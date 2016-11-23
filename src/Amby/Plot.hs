@@ -346,19 +346,21 @@ plotShade c xs = Chart.plot $ Chart.liftEC $ do
 -- Rendering
 --------------------------
 
+-- | Default save filename for Cairo.
 cairoDefSave :: FilePath
 cairoDefSave = ".__amby.png"
 
+-- | Default save filename for Diagrams.
 diagramsDefSave :: FilePath
 diagramsDefSave = ".__amby.svg"
 
+-- | Convert 'AmbyChart' into Chart's 'EC (Layout Double Double) ()'.
 getEC :: AmbyChart () -> EC (Layout Double Double) ()
 getEC compute = getLayout $ execState compute def
 
 getState :: AmbyChart () -> AmbyState
 getState compute = execState compute def
 
--- | Quick render.
 -- Short-hand to render to png file using Cairo backend.
 save :: AmbyChart () -> IO ()
 save chart = Cairo.toFile

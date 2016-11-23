@@ -39,6 +39,7 @@ library
                      , Amby.Numeric
                      , Amby.Plot
                      , Amby.Display
+                     , Amby.Container
                      , Amby.Compatibility.HistogramPlot
                      , Amby.Compatibility.HistogramNumeric
   build-depends:       base >= 4.7 && < 5
@@ -47,6 +48,7 @@ library
                      , Chart-diagrams
                      , Chart
                      , vector
+                     , text
                      , vector-algorithms
                      , statistics
                      , colour
@@ -61,6 +63,9 @@ library
                      -- 'Lens' package used as dependency of 'Chart'
                      , lens
                      , mwc-random
+                     , Frames
+                     , foldl
+                     , singletons
   ghc-options:         -Wall -fno-warn-orphans
   default-language:    Haskell2010
 
