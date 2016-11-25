@@ -23,13 +23,12 @@ module Amby.Numeric
 
   ) where
 
-import Data.Vector.Generic ((!))
 import qualified Data.Vector.Generic as G
 import qualified Data.Vector.Unboxed as U
 import qualified Data.Vector as V
-import qualified Data.Vector.Algorithms.Intro as V
 
 import Statistics.Distribution
+import qualified Statistics.Quantile as Stats
 import System.Random.MWC (withSystemRandom, asGenST)
 
 -- $setup
@@ -86,30 +85,8 @@ random d n = withSystemRandom . asGenST $ \gen ->
 --
 -- >>> scoreAtPercentile a 50
 -- 49.5
-scoreAtPercentile :: (G.Vector v Double) => v Double -> Double -> Double
-scoreAtPercentile xs p
-  | n == 0 = modErr "scoreAtPercentile" "Percentile sample size is 0"
-  | p < 0 || p > 100 = modErr "scoreAtPercentile" "Percentile must be in [0, 100]"
-  | otherwise = (getScore . G.modify V.sort) xs
-  where
-    n = G.length xs
-    idx = (p / 100) * fromIntegral (n - 1)
-    i = floor idx
-    j = ceiling idx
-
-    isInt :: Double -> Bool
-    isInt a = fromIntegral (round a :: Int) == a
-
-    interop :: (G.Vector v Double) => v Double -> Double
-    interop vec =
-      (vec ! i) * (fromIntegral j - idx) +
-      (vec ! j) * (idx - fromIntegral i)
-
-    getScore vec = if isInt idx
-      then vec ! i
-      else interop vec
-{-# SPECIALIZE scoreAtPercentile :: U.Vector Double -> Double -> Double #-}
-{-# SPECIALIZE scoreAtPercentile :: V.Vector Double -> Double -> Double #-}
+scoreAtPercentile :: (G.Vector v Double) => v Double -> Int -> Double
+scoreAtPercentile xs p = Stats.weightedAvg p 100 xs
 
 -- | Calculate the interquartile range.
 --
@@ -136,8 +113,3 @@ freedmanDiaconisBins xs =
   where
     n = G.length xs
     h = 2 * interquartileRange xs / fromIntegral n ** (1 / 3)
-
-modErr :: String -> String -> a
-modErr f err = error
-  $ showString "Amby.Numeric."
-  $ showString f err

@@ -5,11 +5,13 @@
 module Amby.Theme
   ( Theme(..)
   , AmbyColor(..)
+  , Palette
 
   -- * Themes
   , mutedTheme
   , deepTheme
   , cleanTheme
+  , plainTheme
 
   -- * Lenses
   , bgColor
@@ -23,13 +25,31 @@ module Amby.Theme
   , hexToRgb
   , hexToRgba
   , toColour
+  , huslPalette
+  , lightPalette
+  , desaturate
+  , alphaToHsl
+  , hslToAlpha
   )
   where
 
 import Control.Lens
-import Data.Colour
-import Data.Colour.SRGB
 import Data.Default
+import Data.Fixed (mod')
+import qualified Data.Maybe as Maybe
+import qualified Data.Vector.Generic as G
+import qualified Data.Vector.Unboxed as U
+import qualified Data.Vector as V
+
+import Data.Colour (AlphaColour, opaque)
+import qualified Data.Colour as Colour
+import Data.Colour.SRGB (sRGB, toSRGB, sRGB24read)
+import Data.Colour.RGBSpace (uncurryRGB)
+import Data.Colour.RGBSpace.HSL (hsl, hslView)
+
+import Amby.Numeric
+
+type Palette = [AlphaColour Double]
 
 -- | Used to style a chart.
 data Theme = Theme
@@ -38,12 +58,12 @@ data Theme = Theme
   , _themeGridLineColor :: AlphaColour Double
   , _themeFontFamily :: String
   , _themeFontSize :: Double
-  , _themeColorCycle :: [AlphaColour Double]
-  }
+  , _themeColorCycle :: Palette
+  } deriving (Show)
 makeFields ''Theme
 
 instance Default Theme where
-  def = deepTheme
+  def = plainTheme
 
 -- | Api facing color selection.
 data AmbyColor =
@@ -51,6 +71,23 @@ data AmbyColor =
   | R | G | B | C | M | Y | K | W
   | CustomColor (AlphaColour Double)
   deriving (Show, Eq)
+
+plainTheme :: Theme
+plainTheme = Theme
+  { _themeBgColor = opaque (sRGB24read "#FFFFFF")
+  , _themePlotBgColor = opaque (sRGB24read "#EAEAF2")
+  , _themeGridLineColor = opaque (sRGB24read "#FFFFFF")
+  , _themeFontFamily = "Verdana"
+  , _themeFontSize = 14
+  , _themeColorCycle =
+    [ opaque (sRGB24read "#4A70B2")
+    , opaque (sRGB24read "#52A966")
+    , opaque (sRGB24read "#C64D4F")
+    , opaque (sRGB24read "#8170B4")
+    , opaque (sRGB24read "#CDBA70")
+    , opaque (sRGB24read "#60B5CF")
+    ]
+  }
 
 mutedTheme :: Theme
 mutedTheme = Theme
@@ -87,10 +124,12 @@ deepTheme = Theme
   }
 
 cleanTheme :: Theme
-cleanTheme = def
+cleanTheme = Theme
   { _themeBgColor = opaque (sRGB24read "#FFFFFF")
   , _themePlotBgColor = opaque (sRGB24read "#FFFFFF")
   , _themeGridLineColor = opaque (sRGB24read "#EEEEEE")
+  , _themeFontFamily = "Verdana"
+  , _themeFontSize = 14
   , _themeColorCycle =
     [ opaque (sRGB24read "#1776B6")
     , opaque (sRGB24read "#FF962A")
@@ -108,7 +147,7 @@ hexToRgb :: String -> AmbyColor
 hexToRgb s = CustomColor $ opaque (sRGB24read s)
 
 hexToRgba :: String -> Double -> AmbyColor
-hexToRgba s a = CustomColor $ withOpacity (sRGB24read s) a
+hexToRgba s a = CustomColor $ Colour.withOpacity (sRGB24read s) a
 
 -- | Conversion from Amby Api 'Color' to  underlying 'Colour' type.
 toColour :: AmbyColor -> AlphaColour Double -> AlphaColour Double
@@ -122,3 +161,78 @@ toColour Y _ = opaque (sRGB24read "#C4AD66")
 toColour C _ = opaque (sRGB24read "#77BEDB")
 toColour K _ = opaque (sRGB24read "#000000")
 toColour W _ = opaque (sRGB24read "#FFFFFF")
+
+-- | Get a set of evenly spaced colors in the HUSL space.
+huslPalette :: Int -> Maybe Double -> Maybe Double -> Maybe Double -> Palette
+huslPalette n hMay sMay lMay = V.toList huesBoxed
+  where
+    h = Maybe.fromMaybe 0.01 hMay
+    s = Maybe.fromMaybe 0.90 sMay
+    l = Maybe.fromMaybe 0.65 lMay
+    hues = U.init $ linspace 0 1 (n + 1)
+    hues' = (`U.map` hues) $
+        (* 359)
+      . (`mod'` 1)
+      . (+ h)
+    huesBoxed = (`V.map` G.convert hues') $
+        opaque
+      . uncurryRGB sRGB
+      . (\hi -> hsl hi s l)
+
+-- | Get sequential palette of colors from light to dark
+lightPalette :: AlphaColour Double -> Int -> Palette
+lightPalette c n = blendPalette lightColor c n
+  where
+    (h, s, _) = alphaToHsl c
+    lightColor = hslToAlpha h s 0.95
+
+blendPalette :: AlphaColour Double -> AlphaColour Double -> Int -> Palette
+blendPalette s e n
+  | n < 2 = modErr "blendPalette" "Need at least two colors to blend"
+  | n == 2 = [s, e]
+  | otherwise =
+      V.toList
+    $ (`V.snoc` e)
+    $ V.cons s
+    $ V.map (\x -> Colour.blend x s e)
+    $ G.convert
+    $ U.tail
+    $ U.init
+    $ linspace 0 1 n
+
+-- | Desaturate color by a proporation.
+desaturate :: Double -> AlphaColour Double -> AlphaColour Double
+desaturate p c
+  | p < 0 || p > 1 =
+    modErr "setSaturation" "Saturation proportion must be between [0, 1]"
+  | otherwise = hslToAlpha h (s * p) l
+  where
+    (h, s, l) = alphaToHsl c
+
+-- | Converts 'AlphaColour Double' to triplet of 'Double's in hsl encoding.
+--
+-- Examples:
+--
+-- >>> import qualified Data.Colour.Names as Colour
+-- >>> alphaToHsl (opaque Colour.black)
+-- (0.0,0.0,0.0)
+--
+-- >>> alphaToHsl (opaque Colour.blue)
+-- (240.0,1.0,0.5)
+alphaToHsl :: AlphaColour Double -> (Double, Double, Double)
+alphaToHsl c = hslView . toSRGB . (c `Colour.over`) $ Colour.black
+
+-- | Converts hsl triplet of 'Double's to 'AlphaColour Double'.
+hslToAlpha :: Double -> Double -> Double -> AlphaColour Double
+hslToAlpha h s l
+  | h < 0   || s < 0 || l < 0 = modErr
+    "hslToAlpha" "hsl accepts values in ([0, 365], [0,1], [0,1])"
+  | h > 365 || s > 1 || l > 1 = modErr
+    "hslToAlpha" "hsl accepts values in ([0, 365], [0,1], [0,1])"
+  | otherwise = opaque . uncurryRGB sRGB $ hsl h s l
+
+modErr :: String -> String -> a
+modErr f err = error
+  $ showString "Amby.Theme."
+  $ showString f
+  $ showString ": " err

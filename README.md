@@ -107,6 +107,27 @@ You can also control how far past the range of your dataset the curve is drawn. 
 
 <img src="https://cloud.githubusercontent.com/assets/197051/20501066/37c7f0ee-b006-11e6-91b8-b951cafa4100.png" alt="Kernel density estimation cut" width="400" height="300">
 
+## Plotting categorical data
+
+In this section of the tutorial we'll look at how to plot and segment a main variable against several other categorical variables. First, we'll use the module found at `example/Tips.hs` to provide the `parseCsv` method for simplicity. We'll use the same [tips](https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv) data found in Python's Seaborn tutorial.
+
+```haskell
+import Control.Lens
+import qualified Data.Vector as V
+
+(header, ds) <- parseCsv
+let x = V.map (^. tip) ds
+let y = V.map (^. sex) ds
+let y2 = V.map (^. day) ds
+````
+
+Now that we have variables to work with, we can can begin to segment tip amount based on different categorical variables using the `boxPlot` function. But first, let's look at the distribution without segmentation.
+
+```haskell
+boxPlot' x
+```
+
+
 ## Rendering
 
 There are several ways to render plots.

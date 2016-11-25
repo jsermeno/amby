@@ -7,7 +7,8 @@
 module Amby
   (
   -- * Modules
-    module Amby.Theme
+    module Amby.Categorical
+  , module Amby.Theme
   , module Amby.Numeric
   , module Amby.Types
   , module Amby.Plot
@@ -18,6 +19,7 @@ module Amby
 
 import Graphics.Rendering.Chart.Easy ((.=))
 
+import Amby.Categorical
 import Amby.Types
 import Amby.Numeric
 import Amby.Theme

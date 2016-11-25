@@ -7,6 +7,7 @@
 module Amby.Style
   ( setThemeStyles
   , scaledAxisCustom
+  , categoricalAxisData
   )
   where
 
@@ -59,6 +60,11 @@ roundAxisData axisData = axisData & Chart.axis_labels %~ go
           Nothing -> x
       where
         precision = maximum $ map (countAfterDecimal . snd) xs
+
+categoricalAxisData :: [(x, String)] -> Chart.AxisData x -> Chart.AxisData x
+categoricalAxisData labels axisData = axisData
+  & Chart.axis_grid .~ []
+  & Chart.axis_labels .~ [labels]
 
 ------------------------
 -- Scaling

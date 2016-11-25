@@ -36,6 +36,7 @@ import Safe (maximumMay)
 import qualified Statistics.Sample.KernelDensity.Simple as Stats
 import qualified Statistics.Sample as Stats
 
+import Amby.BoxPlot
 import Amby.Compatibility.HistogramPlot
 import Amby.Numeric
 import Amby.Theme (toColour)
@@ -58,6 +59,8 @@ instance AmbyContainer (V.Vector Double) where
   kdePlot' = kdePlotVec'
   rugPlot = rugPlotVec
   rugPlot' = rugPlotVec'
+  boxPlot = boxPlotVec
+  boxPlot' = boxPlotVec'
 
 instance AmbyContainer (U.Vector Double) where
   type Value (U.Vector Double) = Double
@@ -72,52 +75,42 @@ instance AmbyContainer (U.Vector Double) where
   kdePlot' = kdePlotVec'
   rugPlot = rugPlotVec
   rugPlot' = rugPlotVec'
+  boxPlot = boxPlotVec
+  boxPlot' = boxPlotVec'
 
 instance (Real a) => AmbyContainer [a] where
   type Value [a] = a
 
-  plot :: [a] -> [a] -> State PlotOpts () -> AmbyChart ()
   plot x y optsState = plotList vals opts
     where
       opts = execState optsState def
-      vals = L.zipWith (\a b -> (realToFrac a, realToFrac b)) x y
-
-  plot' :: [a] -> [a] -> AmbyChart ()
+      vals = L.zipWith realToTuple x y
   plot' x y = plot x y $ return ()
 
-  plotEq :: [a] -> (a -> a) -> State PlotEqOpts () -> AmbyChart ()
   plotEq x fn optsState = plotList vals $ def
       & color .~ (opts ^. color)
     where
       opts = execState optsState def
-      vals = L.zipWith (\a b -> (realToFrac a, realToFrac b)) x $ map fn x
-
-  plotEq' :: [a] -> (a -> a) -> AmbyChart ()
+      vals = L.zipWith realToTuple x $ map fn x
   plotEq' x fn = plotEq x fn $ return ()
 
-  distPlot :: [a] -> State DistPlotOpts () -> AmbyChart ()
-  distPlot xs optsState = distPlotVec valsVec optsState
-    where
-      valsVec = (V.map realToFrac . V.fromList) xs
-
-  distPlot' :: [a] -> AmbyChart ()
+  distPlot xs optsState = distPlotVec (realToVec xs) optsState
   distPlot' xs = distPlot xs $ return ()
 
-  kdePlot :: [a] -> State KdePlotOpts () -> AmbyChart ()
-  kdePlot xs optsState = kdePlotVec valsVec optsState
-    where
-      valsVec = (V.map realToFrac . V.fromList) xs
-
-  kdePlot' :: [a] -> AmbyChart ()
+  kdePlot xs optsState = kdePlotVec (realToVec xs) optsState
   kdePlot' xs = kdePlot xs $ return ()
 
-  rugPlot :: [a] -> State RugPlotOpts () -> AmbyChart ()
-  rugPlot xs optsState = rugPlotVec valsVec optsState
-    where
-      valsVec = (V.map realToFrac . V.fromList) xs
-
-  rugPlot' :: [a] -> AmbyChart ()
+  rugPlot xs optsState = rugPlotVec (realToVec xs) optsState
   rugPlot' xs = rugPlot xs $ return ()
+
+  boxPlot xs optsState = boxPlotVec (realToVec xs) optsState
+  boxPlot' xs = boxPlot xs $ return ()
+
+realToVec :: Real a => [a] -> V.Vector Double
+realToVec = V.map realToFrac . V.fromList
+
+realToTuple :: Real a => a -> a -> (Double, Double)
+realToTuple a b = (realToFrac a, realToFrac b)
 
 --------------------------
 -- Generic vec plotters

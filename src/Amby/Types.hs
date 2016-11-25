@@ -4,6 +4,8 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE GADTSyntax #-}
 module Amby.Types
   ( AmbyContainer(..)
   , AmbyState
@@ -30,6 +32,7 @@ module Amby.Types
   , DistPlotOpts
   , KdePlotOpts
   , RugPlotOpts
+  , BoxPlotOpts
   , Bandwidth(..)
   , Axis(..)
   , bins
@@ -44,6 +47,12 @@ module Amby.Types
   , gridsize
   , bw
   , color
+
+  -- * Categorical options
+  , cat
+  , hue
+  , col
+  , saturation
   )
   where
 
@@ -58,6 +67,7 @@ import Graphics.Rendering.Chart.Backend.Cairo (FileOptions(..))
 import Amby.Compatibility.HistogramPlot
 import Amby.Theme
 import Amby.Style
+import Amby.Categorical
 
 -----------------------------------
 -- Parameter option types
@@ -118,8 +128,19 @@ data RugPlotOpts = RugPlotOpts
   , _rugPlotOptsAxis :: Axis
   , _rugPlotOptsColor :: AmbyColor
   , _rugPlotOptsLinewidth :: Double
-  }
+  } deriving (Show)
 makeFields ''RugPlotOpts
+
+data BoxPlotOpts = BoxPlotOpts
+  { _boxPlotOptsCat :: Category
+  , _boxPlotOptsHue :: Category
+  , _boxPlotOptsCol :: Category
+  , _boxPlotOptsColor :: AmbyColor
+  , _boxPlotOptsSaturation :: Double
+  , _boxPlotOptsAxis :: Axis
+  , _boxPlotOptsLinewidth :: Double
+  } deriving (Show)
+makeFields ''BoxPlotOpts
 
 -----------------------------------
 -- Main types
@@ -136,6 +157,7 @@ type AmbyChart a = State AmbyState a
 
 class AmbyContainer c where
   type Value c :: *
+
   plot :: c -> c -> State PlotOpts () -> AmbyChart ()
   plot' :: c -> c -> AmbyChart ()
   plotEq :: c -> (Value c -> Value c) -> State PlotEqOpts () -> AmbyChart ()
@@ -146,6 +168,8 @@ class AmbyContainer c where
   kdePlot' :: c -> AmbyChart ()
   rugPlot :: c -> State RugPlotOpts () -> AmbyChart()
   rugPlot' :: c -> AmbyChart ()
+  boxPlot :: c -> State BoxPlotOpts () -> AmbyChart ()
+  boxPlot' :: c -> AmbyChart ()
 
 -----------------------------------
 -- General options
@@ -273,4 +297,15 @@ instance Default RugPlotOpts where
     , _rugPlotOptsAxis = XAxis
     , _rugPlotOptsColor = DefaultColor
     , _rugPlotOptsLinewidth = 1.2
+    }
+
+instance Default BoxPlotOpts where
+  def = BoxPlotOpts
+    { _boxPlotOptsCat = DefaultCategory
+    , _boxPlotOptsHue = DefaultCategory
+    , _boxPlotOptsCol = DefaultCategory
+    , _boxPlotOptsColor = DefaultColor
+    , _boxPlotOptsSaturation = 0.8
+    , _boxPlotOptsAxis = XAxis
+    , _boxPlotOptsLinewidth = 2.5
     }
