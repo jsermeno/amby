@@ -67,7 +67,7 @@ getCategoryOrder = _categoryOrder
 -- Examples:
 --
 -- >>> groupByCategory [1..5] (toCat [1, 1, 3, 2, 4])
--- [[1,2],[4],[3],[5]]
+-- [[1,2],[3],[4],[5]]
 groupByCategory :: [a] -> Category -> [[a]]
 groupByCategory xs cat
   | length xs /= length (getCategoryList cat) =
