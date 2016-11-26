@@ -7,6 +7,7 @@
 <img src="https://cloud.githubusercontent.com/assets/197051/20501027/02c44a82-b006-11e6-9589-91dd9fe141c0.png" alt="normal distribution plot" width="200" height="150">
 <img src="https://cloud.githubusercontent.com/assets/197051/20501025/0182f9de-b006-11e6-8a38-24b081b9892c.png" alt="clean theme equation plot" width="200" height="150">
 <img src="https://cloud.githubusercontent.com/assets/197051/20501066/37c7f0ee-b006-11e6-91b8-b951cafa4100.png" alt="multiple beta distributions" width="200" height="150">
+<img src="https://cloud.githubusercontent.com/assets/197051/20642844/349dc46c-b3e8-11e6-97d8-028e39308020.png" alt="boxplot with empty bins" width="200" height="150">
 
 A statistics visualization library built on top of [Chart](https://github.com/timbod7/haskell-chart) inspired by [Seaborn](https://github.com/mwaskom/seaborn). Amby provides a high level interface to quickly display attractive visualizations. Amby also provides tools to display Charts from both Amby and the Chart package within GHCi.
 
@@ -180,7 +181,7 @@ If you want to compare more than two categorical variables you can use `factorPl
 λ> gridTheme cleanTheme >> factorPlot b (fac .= s >> hue .= d >> col .= k)
 ```
 
-<img src="https://cloud.githubusercontent.com/assets/197051/20642846/34a6210c-b3e8-11e6-82eb-91badd31c1d3.png" alt="boxplot with three factors" width="400" height="300">
+<img src="https://cloud.githubusercontent.com/assets/197051/20642846/34a6210c-b3e8-11e6-82eb-91badd31c1d3.png" alt="boxplot with three factors" width="800" height="300">
 
 We can add labels.
 
@@ -188,7 +189,7 @@ We can add labels.
 λ> factorPlot b $ fac .= s >> hue .= d >> col .= k >> colLabel .= "smoker"
 ```
 
-<img src="https://cloud.githubusercontent.com/assets/197051/20642845/34a0c4c8-b3e8-11e6-8308-20aef22361f7.png" alt="labeled boxplot with three factors" width="400" height="300">
+<img src="https://cloud.githubusercontent.com/assets/197051/20642845/34a0c4c8-b3e8-11e6-8308-20aef22361f7.png" alt="labeled boxplot with three factors" width="800" height="300">
 
 You can compare up to four categorical variables using `factorPlot`.
 
@@ -196,7 +197,7 @@ You can compare up to four categorical variables using `factorPlot`.
 λ> factorPlot b $ fac .= s >> hue .= d >> col .= k >> row .= t
 ```
 
-<img src="https://cloud.githubusercontent.com/assets/197051/20642844/349dc46c-b3e8-11e6-97d8-028e39308020.png" alt="boxplot with four factors" width="400" height="300">
+<img src="https://cloud.githubusercontent.com/assets/197051/20642844/349dc46c-b3e8-11e6-97d8-028e39308020.png" alt="boxplot with four factors" width="800" height="600">
 
 ## Rendering
 
