@@ -12,6 +12,8 @@ module Amby.Theme
   , deepTheme
   , cleanTheme
   , plainTheme
+  , easterTheme
+  , springTheme
 
   -- * Lenses
   , bgColor
@@ -120,6 +122,44 @@ deepTheme = Theme
     , opaque (sRGB24read "#8172B2")
     , opaque (sRGB24read "#CCB974")
     , opaque (sRGB24read "#64B5CD")
+    ]
+  }
+
+easterTheme :: Theme
+easterTheme = Theme
+  { _themeBgColor = opaque (sRGB24read "#FFFFFF")
+  , _themePlotBgColor = opaque (sRGB24read "#EAEAF2")
+  , _themeGridLineColor = opaque (sRGB24read "#FFFFFF")
+  , _themeFontFamily = "Verdana"
+  , _themeFontSize = 14
+  , _themeColorCycle =
+    [ opaque (sRGB24read "#8BD3C7")
+    , opaque (sRGB24read "#FEFFAF")
+    , opaque (sRGB24read "#BFBADA")
+    , opaque (sRGB24read "#FB8071")
+    , opaque (sRGB24read "#7FB0D3")
+    , opaque (sRGB24read "#FEB55A")
+    , opaque (sRGB24read "#B2DF60")
+    , opaque (sRGB24read "#FCCCE3")
+    , opaque (sRGB24read "#D8D6D8")
+    , opaque (sRGB24read "#BD7FBE")
+    ]
+  }
+
+springTheme :: Theme
+springTheme = Theme
+  { _themeBgColor = opaque (sRGB24read "#FFFFFF")
+  , _themePlotBgColor = opaque (sRGB24read "#EAEAF2")
+  , _themeGridLineColor = opaque (sRGB24read "#FFFFFF")
+  , _themeFontFamily = "Verdana"
+  , _themeFontSize = 14
+  , _themeColorCycle =
+    [ opaque (sRGB24read "#62C3A5")
+    , opaque (sRGB24read "#FC8D5C")
+    , opaque (sRGB24read "#8C9ECC")
+    , opaque (sRGB24read "#E888C4")
+    , opaque (sRGB24read "#A5DA48")
+    , opaque (sRGB24read "#FFDA00")
     ]
   }
 

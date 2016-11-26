@@ -46,7 +46,7 @@ drawBoxPlot :: (G.Vector v Double, G.Vector v (Double, Double))
             -> EC (Layout Double Double) ()
 drawBoxPlot palette xs opts
   -- Boxplot for univariate distribution
-  | opts ^. catL == DefaultCategory = do
+  | opts ^. facL == DefaultCategory = do
     drawUnivariate (head catPalette) lineGray startPos barHeight xs "" opts
 
     -- Axis changes
@@ -57,7 +57,7 @@ drawBoxPlot palette xs opts
         (startPos + (barHeight / 2) + (1/8) * barHeight)
       )
     axisGetter . Chart.laxis_override .= categoricalAxisData []
-    axisGetter . Chart.laxis_title .= (opts ^. catLabel)
+    axisGetter . Chart.laxis_title .= (opts ^. facLabel)
     datAxisGetter . Chart.laxis_title .= (opts ^. datLabel)
     -- TODO: Chart does not give a way to add a title to a legend, or
     -- to change positon of legend
@@ -65,33 +65,33 @@ drawBoxPlot palette xs opts
   -- Boxplot against categorical data
   | opts ^. hueL == DefaultCategory = do
     -- group data
-    let groups = groupByCategory (G.toList xs) (opts ^. catL)
+    let groups = groupByCategory (G.toList xs) (opts ^. facL)
 
     -- draw data
     forM_ (zip3 groups catPalette [0..]) $ \(g, c, i) ->
-      drawUnivariate c lineGray (catMidPos i) barHeight (U.fromList g) "" opts
+      drawUnivariate c lineGray (facMidPos i) barHeight (U.fromList g) "" opts
 
     -- Axis changes
     axisGetter . Chart.laxis_generate .= scaledAxisCustom def
       ( mkAxisTuple
-        (catMidPos (nCats - 1) - catMargin - (barHeight / 2))
-        (startPos + (barHeight / 2) + catMargin)
+        (facMidPos (nFacs - 1) - facMargin - (barHeight / 2))
+        (startPos + (barHeight / 2) + facMargin)
       )
-    axisGetter . Chart.laxis_override .= categoricalAxisData catLabelPos
-    axisGetter . Chart.laxis_title .= (opts ^. catLabel)
+    axisGetter . Chart.laxis_override .= categoricalAxisData facLabelPos
+    axisGetter . Chart.laxis_title .= (opts ^. facLabel)
     datAxisGetter . Chart.laxis_title .= (opts ^. datLabel)
 
   -- Boxplot against two categories
   | otherwise = do
     -- group data
-    let groups = groupByCategory (G.toList xs) cats
-        hueGroups = groupByCategory (getCategoryList hues) cats
+    let groups = groupByCategory (G.toList xs) facs
+        hueGroups = groupByCategory (getCategoryList hues) facs
 
     -- draw data
-    forM_ (zip3 groups hueGroups [0..]) $ \(catData, hueData, i) ->
+    forM_ (zip3 groups hueGroups [0..]) $ \(facData, hueData, i) ->
       forM_ (zip3 (getCategoryOrder hues) catPalette [0..]) $ \(hueVal, c, j) -> do
         let hueMask = map (== hueVal) hueData
-            drawData = U.fromList $ filterMask catData hueMask
+            drawData = U.fromList $ filterMask facData hueMask
             l = if i == 0 && (opts ^. hueLegend)
               then getCategoryLabelFromVal hues hueVal
               else ""
@@ -100,21 +100,21 @@ drawBoxPlot palette xs opts
     -- Axis changes
     axisGetter . Chart.laxis_generate .= scaledAxisCustom def
       ( mkAxisTuple
-        (hueMidPos (nCats - 1) (nHues - 1) - (barHeight / 2) - hueMargin)
+        (hueMidPos (nFacs - 1) (nHues - 1) - (barHeight / 2) - hueMargin)
         (startPos + (barHeight / 2) + hueMargin)
       )
     axisGetter . Chart.laxis_override .= categoricalAxisData hueLabelPos
-    axisGetter . Chart.laxis_title .= (opts ^. catLabel)
+    axisGetter . Chart.laxis_title .= (opts ^. facLabel)
     datAxisGetter . Chart.laxis_title .= (opts ^. datLabel)
   where
-    cats = opts ^. catL
+    facs = opts ^. facL
     hues = opts ^. hueL
-    catLabels = getCategoryLabels cats
-    nCats = catSize cats
+    facLabels = getCategoryLabels facs
+    nFacs = catSize facs
     nHues = catSize hues
     cUser = opts ^. color
     sat = opts ^. saturation
-    (catPalette, lineGray) = getCategoricalPalette palette cUser nCats nHues sat
+    (catPalette, lineGray) = getCategoricalPalette palette cUser nFacs nHues sat
 
     mkAxisTuple x y = if opts ^. axis == XAxis
       then (x, y)
@@ -126,12 +126,12 @@ drawBoxPlot palette xs opts
     barHeight = 1.0
     startPos = -1.0
 
-    catMidSpacing = barHeight / 4.0
-    catMidPos :: Int -> Double
-    catMidPos i = startPos - (barHeight + catMidSpacing) * fromIntegral i
-    catMargin = barHeight / 4.0
-    catLabelPos = if opts ^. catLegend
-      then zipWith (\i l -> mkLabelTuple (catMidPos i) l) [0..] catLabels
+    facMidSpacing = barHeight / 4.0
+    facMidPos :: Int -> Double
+    facMidPos i = startPos - (barHeight + facMidSpacing) * fromIntegral i
+    facMargin = barHeight / 4.0
+    facLabelPos = if opts ^. facLegend
+      then zipWith (\i l -> mkLabelTuple (facMidPos i) l) [0..] facLabels
       else []
 
     hueMidSpacing = barHeight / 2.0
@@ -144,8 +144,8 @@ drawBoxPlot palette xs opts
       - (fromIntegral j * barHeight)
       - (fromIntegral i * (hueCatSize + hueMidSpacing))
     hueLabelMidPos i = startPos - hueSpan - i * (hueCatSize + hueMidSpacing)
-    hueLabelPos = if opts ^. catLegend
-      then zipWith (\i l -> mkLabelTuple (hueLabelMidPos i) l) [0..] catLabels
+    hueLabelPos = if opts ^. facLegend
+      then zipWith (\i l -> mkLabelTuple (hueLabelMidPos i) l) [0..] facLabels
       else []
 
     axisGetter = if (opts ^. axis) == XAxis
@@ -238,16 +238,21 @@ drawUnivariate c lineGray midY yHeight xs l opts = do
       where
         ptr x y = pmap $ join (***) Chart.LValue $ pt x y
 
-    plotBox pmap =
-        Chart.MoveTo (ptr median yt)
-      $ Chart.LineTo (ptr firstQuartile yt)
-      $ Chart.LineTo (ptr firstQuartile yb)
-      $ Chart.LineTo (ptr median yb)
-      $ Chart.LineTo (ptr median yt)
-      $ Chart.LineTo (ptr thirdQuartile yt)
-      $ Chart.LineTo (ptr thirdQuartile yb)
-      $ Chart.LineTo (ptr median yb)
-      $ Chart.End
+    plotBox pmap = if firstQuartile == thirdQuartile
+      then
+          Chart.MoveTo (ptr firstQuartile yt)
+        $ Chart.LineTo (ptr firstQuartile yb)
+        $ Chart.End
+      else
+          Chart.MoveTo (ptr median yt)
+        $ Chart.LineTo (ptr firstQuartile yt)
+        $ Chart.LineTo (ptr firstQuartile yb)
+        $ Chart.LineTo (ptr median yb)
+        $ Chart.LineTo (ptr median yt)
+        $ Chart.LineTo (ptr thirdQuartile yt)
+        $ Chart.LineTo (ptr thirdQuartile yb)
+        $ Chart.LineTo (ptr median yb)
+        $ Chart.End
       where
         ptr x y = pmap $ join (***) Chart.LValue $ pt x y
 

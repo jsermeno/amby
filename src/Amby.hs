@@ -12,6 +12,7 @@ module Amby
   , module Amby.Numeric
   , module Amby.Types
   , module Amby.Plot
+  , module Amby.Util
 
   -- * Lens operators
   , (.=)
@@ -25,3 +26,4 @@ import Amby.Numeric
 import Amby.Theme
 import Amby.Plot
 import Amby.Display ()
+import Amby.Util

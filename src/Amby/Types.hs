@@ -29,6 +29,7 @@ module Amby.Types
 
   -- * Grid
   , gridTheme
+  , takeGridTheme
   , gridSize
   , gridScale
   , setGrid
@@ -63,20 +64,20 @@ module Amby.Types
   , rugLinewidth
   , kind
   , hueLegend
-  , catLegend
+  , facLegend
 
   -- * Categorical options
-  , cat
+  , fac
   , hue
   , row
   , col
   , saturation
-  , catL
+  , facL
   , hueL
   , rowL
   , colL
   , datLabel
-  , catLabel
+  , facLabel
   , rowLabel
   , colLabel
   )
@@ -161,21 +162,21 @@ data RugPlotOpts = RugPlotOpts
 makeFields ''RugPlotOpts
 
 data BoxPlotOpts = BoxPlotOpts
-  { _boxPlotOptsCatL :: Category
+  { _boxPlotOptsFacL :: Category
   , _boxPlotOptsHueL :: Category
   , _boxPlotOptsColor :: AmbyColor
   , _boxPlotOptsSaturation :: Double
   , _boxPlotOptsAxis :: Axis
   , _boxPlotOptsLinewidth :: Double
   , _boxPlotOptsHueLegend :: Bool
-  , _boxPlotOptsCatLegend :: Bool
+  , _boxPlotOptsFacLegend :: Bool
   , _boxPlotOptsDatLabel :: String
-  , _boxPlotOptsCatLabel :: String
+  , _boxPlotOptsFacLabel :: String
   } deriving (Show)
 makeFields ''BoxPlotOpts
 
 data FactorPlotOpts = FactorPlotOpts
-  { _factorPlotOptsCatL :: Category
+  { _factorPlotOptsFacL :: Category
   , _factorPlotOptsHueL :: Category
   , _factorPlotOptsColL :: Category
   , _factorPlotOptsRowL :: Category
@@ -184,25 +185,25 @@ data FactorPlotOpts = FactorPlotOpts
   , _factorPlotOptsAxis :: Axis
   , _factorPlotOptsKind :: PlotKind
   , _factorPlotOptsDatLabel :: String
-  , _factorPlotOptsCatLabel :: String
+  , _factorPlotOptsFacLabel :: String
   , _factorPlotOptsRowLabel :: String
   , _factorPlotOptsColLabel :: String
   -- TODO: Polymorphic setters for labels?
   } deriving (Show)
 makeFields ''FactorPlotOpts
 
-class HasCat s a b | s -> a where
-  cat :: Setter s s a b
-instance (Foldable f, Ord a, Show a) => HasCat BoxPlotOpts Category (f a) where
-  cat = sets (\a b -> b { _boxPlotOptsCatL = (toCat . a) (_boxPlotOptsCatL b) })
-instance HasCat BoxPlotOpts Category Category where
-  cat = sets (\a b -> b { _boxPlotOptsCatL = a (_boxPlotOptsCatL b) })
-instance (Foldable f, Ord a, Show a) => HasCat FactorPlotOpts Category (f a) where
-  cat = sets (\a b -> b
-    { _factorPlotOptsCatL = (toCat . a) (_factorPlotOptsCatL b)
+class HasFac s a b | s -> a where
+  fac :: Setter s s a b
+instance (Foldable f, Ord a, Show a) => HasFac BoxPlotOpts Category (f a) where
+  fac = sets (\a b -> b { _boxPlotOptsFacL = (toCat . a) (_boxPlotOptsFacL b) })
+instance HasFac BoxPlotOpts Category Category where
+  fac = sets (\a b -> b { _boxPlotOptsFacL = a (_boxPlotOptsFacL b) })
+instance (Foldable f, Ord a, Show a) => HasFac FactorPlotOpts Category (f a) where
+  fac = sets (\a b -> b
+    { _factorPlotOptsFacL = (toCat . a) (_factorPlotOptsFacL b)
     })
-instance HasCat FactorPlotOpts Category Category where
-  cat = sets (\a b -> b { _factorPlotOptsCatL = a (_factorPlotOptsCatL b) })
+instance HasFac FactorPlotOpts Category Category where
+  fac = sets (\a b -> b { _factorPlotOptsFacL = a (_factorPlotOptsFacL b) })
 
 class HasHue s a b | s -> a where
   hue :: Setter s s a b
@@ -350,6 +351,10 @@ gridTheme :: Theme -> AmbyGrid ()
 gridTheme t = do
   agsThemeState .= t
 
+takeGridTheme :: AmbyGrid Theme
+takeGridTheme = do
+  use agsThemeState
+
 xlim :: (Double, Double) -> AmbyChart ()
 xlim rs = do
   l <- use asLayoutState
@@ -475,21 +480,21 @@ instance Default RugPlotOpts where
 
 instance Default BoxPlotOpts where
   def = BoxPlotOpts
-    { _boxPlotOptsCatL = DefaultCategory
+    { _boxPlotOptsFacL = DefaultCategory
     , _boxPlotOptsHueL = DefaultCategory
     , _boxPlotOptsColor = DefaultColor
     , _boxPlotOptsSaturation = 0.8
     , _boxPlotOptsAxis = XAxis
     , _boxPlotOptsLinewidth = 2
-    , _boxPlotOptsCatLegend = True
+    , _boxPlotOptsFacLegend = True
     , _boxPlotOptsHueLegend = True
     , _boxPlotOptsDatLabel = ""
-    , _boxPlotOptsCatLabel = ""
+    , _boxPlotOptsFacLabel = ""
     }
 
 instance Default FactorPlotOpts where
   def = FactorPlotOpts
-    { _factorPlotOptsCatL = DefaultCategory
+    { _factorPlotOptsFacL = DefaultCategory
     , _factorPlotOptsHueL = DefaultCategory
     , _factorPlotOptsColL = DefaultCategory
     , _factorPlotOptsRowL = DefaultCategory
@@ -498,7 +503,7 @@ instance Default FactorPlotOpts where
     , _factorPlotOptsAxis = XAxis
     , _factorPlotOptsKind = Box
     , _factorPlotOptsDatLabel = ""
-    , _factorPlotOptsCatLabel = ""
+    , _factorPlotOptsFacLabel = ""
     , _factorPlotOptsRowLabel = ""
     , _factorPlotOptsColLabel = ""
     }

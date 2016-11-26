@@ -9,6 +9,7 @@ module Amby.Categorical
   -- * Methods
   , toCat
   , toCatOrdered
+  , changeOrder
   , getCategoryLabels
   , getCategoryLabelFromVal
   , getCategoryOrder
@@ -133,34 +134,50 @@ catValsLength :: Category -> Int
 catValsLength c = length $ getCategoryList c
 
 -- | Convert 'Foldable' into a 'Category'.
-toCat :: (Foldable f, Ord a, Show a) => f a -> Category
+toCat :: (Foldable f, Eq a, Show a) => f a -> Category
 toCat f = listToCat list order
   where
     list = Foldable.toList f
-    order = (L.sort . L.nubOrd) list
+    order = L.nub list
 
-toCatOrdered :: (Foldable f, Ord a, Show a) => f a -> f a -> Category
+toCatOrdered :: (Foldable f, Eq a, Show a) => f a -> f a -> Category
 toCatOrdered f order = listToCat (Foldable.toList f) (Foldable.toList order)
 
-listToCat :: (Ord a, Show a) => [a] -> [a] -> Category
+changeOrder :: (Foldable f, Show a) => Category -> f a -> Category
+changeOrder cat order = cat
+  { _categoryOrder = newOrder
+  }
+  where
+    currOrder = _categoryOrder cat
+    intMap = _categoryTable cat
+    nameMap  = (`map` currOrder) $ \i -> case Map.lookup i intMap of
+      Nothing -> modErr "changeOrder" "Invalid map key"
+      Just a -> (a, i)
+    newOrder = (`map` Foldable.toList order) $ \s ->
+      case lookup (mkDisplayString s) nameMap of
+        Nothing -> modErr "changeOrder" "Invalid string key"
+        Just a -> a
+
+listToCat :: (Eq a, Show a) => [a] -> [a] -> Category
 listToCat xs order
-  | L.length (L.nubOrd order) /= L.length order =
+  | L.length (L.nub order) /= L.length order =
     modErr "listToCat" "Order cannot contain duplicates"
   | otherwise = Category
     { _categoryOrder = map snd orderedPairs
     , _categoryValues = map replaceWithIdx xs
     , _categoryTable = map swap orderedPairs
-      & mapped . _2 %~ toString
+      & mapped . _2 %~ mkDisplayString
       & Map.fromList
     , _categoryGroups = []
     }
   where
-    toString = filter (/= '"') . show
     orderedPairs = zip order [0..]
-    idxMap = Map.fromList orderedPairs
-    replaceWithIdx x = case Map.lookup x idxMap of
+    replaceWithIdx x = case lookup x orderedPairs of
       Just a -> a
       Nothing -> modErr "listToCat" "No idx created for category value"
+
+mkDisplayString :: Show a => a -> String
+mkDisplayString = filter (/= '"') . show
 
 modErr :: String -> String -> a
 modErr f err = error

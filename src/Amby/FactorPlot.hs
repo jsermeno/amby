@@ -14,21 +14,25 @@ import Safe
 
 import Amby.BoxPlot
 import Amby.Categorical
+import Amby.Theme
 import Amby.Types
 
 factorPlotVec :: V.Vector Double -> State FactorPlotOpts () -> AmbyGrid ()
 factorPlotVec xs optsState
   -- Single plot
   | rows == DefaultCategory && cols == DefaultCategory = do
+    activeTheme <- takeGridTheme
     ambyChart <- case opts ^. kind of
-      Box -> return $ boxPlotVec xs $ do
-        catL .= (opts ^. catL)
-        hueL .= (opts ^. hueL)
-        color .= opts ^. color
-        saturation .= opts ^. saturation
-        axis .= opts ^. axis
-        catLabel .= opts ^. catLabel
-        datLabel .= opts ^. datLabel
+      Box -> return $ do
+        theme activeTheme
+        boxPlotVec xs $ do
+          facL .= (opts ^. facL)
+          hueL .= (opts ^. hueL)
+          color .= opts ^. color
+          saturation .= opts ^. saturation
+          axis .= opts ^. axis
+          facLabel .= opts ^. facLabel
+          datLabel .= opts ^. datLabel
     setGrid $ chartToGrid ambyChart
 
   -- Row chart
@@ -51,7 +55,7 @@ drawThirdFactor :: V.Vector Double -> Category
                 -> ([ChartGrid] -> ChartGrid) -> Int -> Int -> String
                 -> FactorPlotOpts -> AmbyGrid ()
 drawThirdFactor xs grouper gridGrouper nRows nCols gLabel opts = do
-  let cats = opts ^. catL
+  let cats = opts ^. facL
       hues = opts ^. hueL
       datGroups = groupByCategory (V.toList xs) grouper
       catGroups = cats `groupCategoryBy` grouper
@@ -59,6 +63,7 @@ drawThirdFactor xs grouper gridGrouper nRows nCols gLabel opts = do
       factorOrder = getCategoryOrder grouper
       plotKind = opts ^. kind
       drawAxis = opts ^. axis
+  activeTheme <- takeGridTheme
   setGrid
     $ gridGrouper
     $ (`map` zip factorOrder [0..])
@@ -68,10 +73,11 @@ drawThirdFactor xs grouper gridGrouper nRows nCols gLabel opts = do
             Nothing -> modErr "drawThirdFactor" $ "No group at index: " ++ show i
       case plotKind of
         Box -> chartToGrid $ do
+          theme activeTheme
           boxPlotVec datGroup $ do
-            catL .= catGroups `getGroupAt` i
+            facL .= catGroups `getGroupAt` i
             hueL .= hueGroups `getGroupAt` i
-            catLegend .= if nCols > 1
+            facLegend .= if nCols > 1
               then i == 0 || drawAxis == YAxis
               else i == nRows - 1 || drawAxis == XAxis
             hueLegend .= if nCols > 1
@@ -80,12 +86,12 @@ drawThirdFactor xs grouper gridGrouper nRows nCols gLabel opts = do
             color .= opts ^. color
             saturation .= opts ^. saturation
             axis .= opts ^. axis
-            catLabel .=
+            facLabel .=
               if   (drawAxis == XAxis && nCols > 1 && i == 0)
                 || (drawAxis == XAxis && nRows > 1)
                 || (drawAxis == YAxis && nCols > 1)
                 || (drawAxis == YAxis && nRows > 1 && i == nRows - 1)
-                then opts ^. catLabel
+                then opts ^. facLabel
                 else ""
             datLabel .=
               if   (drawAxis == XAxis && nCols > 1)
@@ -101,15 +107,18 @@ drawThirdFactor xs grouper gridGrouper nRows nCols gLabel opts = do
 
 drawFourthFactor :: V.Vector Double -> Category -> Category -> FactorPlotOpts
                  -> AmbyGrid ()
-drawFourthFactor xs rows cols opts =
-      setGrid
-    $ Chart.aboveN
-    $ (`map` zip rowOrder [0..])
-    $ \rowIdx ->
-        Chart.besideN
-      $ (`map` zip colOrder [0..]) $ \colIdx -> drawGridCell rowIdx colIdx
+drawFourthFactor xs rows cols opts = do
+    activeTheme <- takeGridTheme
+    setGrid
+      $ Chart.aboveN
+      $ (`map` zip rowOrder [0..])
+      $ \rowIdx ->
+          Chart.besideN
+        $ (`map` zip colOrder [0..]) $ \colIdx ->
+          drawGridCell rowIdx colIdx activeTheme
+    gridScale (fromIntegral nCols, fromIntegral nRows)
   where
-    cats = opts ^. catL
+    cats = opts ^. facL
     hues = opts ^. hueL
     datGroups = groupByCategory (V.toList xs) rows
     catGroups = cats `groupCategoryBy` rows
@@ -118,13 +127,14 @@ drawFourthFactor xs rows cols opts =
     rowOrder = getCategoryOrder rows
     colOrder = getCategoryOrder cols
     nRows = length rowOrder
+    nCols = length colOrder
     plotKind = opts ^. kind
     rLabel = opts ^. rowLabel
     cLabel = opts ^. colLabel
     drawAxis = opts ^. axis
 
-    drawGridCell :: (Int, Int) -> (Int, Int) -> ChartGrid
-    drawGridCell (rowVal, i) (colVal, j) = do
+    drawGridCell :: (Int, Int) -> (Int, Int) -> Theme -> ChartGrid
+    drawGridCell (rowVal, i) (colVal, j) activeTheme = do
       let rowColGroup = colGroups `getGroupAt` i
           colMask = map (== colVal) (getCategoryList rowColGroup)
       let rowDatGroup = case datGroups `atMay` i of
@@ -135,20 +145,21 @@ drawFourthFactor xs rows cols opts =
 
       case plotKind of
         Box -> chartToGrid $ do
+          theme activeTheme
           boxPlotVec rowDatGroup $ do
-            catL .= rowCatGroup
+            facL .= rowCatGroup
             hueL .= rowHueGroup
-            catLegend .= if drawAxis == XAxis
+            facLegend .= if drawAxis == XAxis
               then j == 0
               else i == nRows - 1
             hueLegend .= (j == 0 && i == nRows - 1)
             color .= opts ^. color
             saturation .= opts ^. saturation
             axis .= opts ^. axis
-            catLabel .=
+            facLabel .=
               if   (j == 0 && drawAxis == XAxis)
                 || (i == nRows - 1 && drawAxis == YAxis)
-                then opts ^. catLabel
+                then opts ^. facLabel
                 else ""
             datLabel .=
               if   (i == nRows - 1 && drawAxis == XAxis)
