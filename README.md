@@ -99,7 +99,7 @@ The bandwith (`bw`) parameter of the KDE controls how tightly the estimation is 
 
 <img src="https://cloud.githubusercontent.com/assets/197051/20501065/361df4aa-b006-11e6-9f6d-94fb6ebd2fef.png" alt="Kernel density estimation bandwidth" width="400" height="300">
 
-You can also control how far past the range of your dataset the curve is drawn. How this only influences how the curve is drawn, not how it is fit.
+You can also control how far past the range of your dataset the curve is drawn. However this only influences how the curve is drawn, not how it is fit.
 
 ```haskell
 λ> kdePlot z (cut .= 0 >> shade .= True) >> rugPlot' z
@@ -109,24 +109,94 @@ You can also control how far past the range of your dataset the curve is drawn. 
 
 ## Plotting categorical data
 
-In this section of the tutorial we'll look at how to plot and segment a main variable against several other categorical variables. First, we'll use the module found at `example/Tips.hs` to provide the `parseCsv` method for simplicity. We'll use the same [tips](https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv) data found in Python's Seaborn tutorial.
+In this section we'll see how to visualize the relationship between a numeric variable and one or more categorical variables.
+
+### Plotting distributions of observations within categories
+
+Boxplots can facilitate easy comparisons across category levels. This kind of plot shows the three quartile values of the distribution along with extreme values. The "whiskers" extend to points that lie within 1.5 IQRs (interquartile range) of the lower and upper quartile, and then observations that fall outside this range are displayed independently. Importantly, this means that each value in the boxplot corresponds to an actual observation in the data:
+
+For convenience we'll use the `loadDataset` method from `Amby.Utils` to load datasets.
+
+The simplest way to draw a boxplot is to use the `boxPlot` function.
 
 ```haskell
-import Control.Lens
-import qualified Data.Vector as V
-
-(header, ds) <- parseCsv
-let x = V.map (^. tip) ds
-let y = V.map (^. sex) ds
-let y2 = V.map (^. day) ds
+λ> ds <- loadDataset tips
+λ> head ds
+Tip
+  { totalBill = 16.99
+  , tip = 1.01
+  , sex = "Female"
+  , smoker = "No"
+  , day = "Sun"
+  , time = "Dinner"
+  , tipSize = 2
+  }
+λ> (b, p, s, k, d, t, _) <- getTipColumns ds
 ````
 
-Now that we have variables to work with, we can can begin to segment tip amount based on different categorical variables using the `boxPlot` function. But first, let's look at the distribution without segmentation.
+Draw a single horizontal boxplot.
 
 ```haskell
-boxPlot' x
+λ> boxPlot' b
 ```
 
+<img src="https://cloud.githubusercontent.com/assets/197051/20642841/346fb11c-b3e8-11e6-9a02-92b192ce17b0.png" alt="single horizontal boxplot" width="400" height="300">
+
+Draw a vertical boxplot grouped by a categorical variable.
+
+```haskell
+λ> boxPlot b $ fac .= d >> axis .= YAxis
+```
+
+<img src="https://cloud.githubusercontent.com/assets/197051/20642842/34890522-b3e8-11e6-9765-0dce804a3773.png" alt="boxplot with one factor" width="400" height="300">
+
+Draw a vertical boxplot with nested grouping by two categorical variables.
+
+```haskell
+λ> boxPlot b $ fac .= s >> hue .= d >> axis .= YAxis >> color .= G
+```
+
+<img src="https://cloud.githubusercontent.com/assets/197051/20642843/3499815e-b3e8-11e6-8d34-b05983453bd2.png" alt="boxplot with two factors" width="400" height="300">
+
+Draw a boxplot when some bins are empty.
+
+```haskell
+λ> theme springTheme >> boxPlot b (fac .= d >> hue .= t)
+```
+
+<img src="https://cloud.githubusercontent.com/assets/197051/20642847/34a870ec-b3e8-11e6-90c9-ed7885be476d.png" alt="boxplot with empty bins" width="400" height="300">
+
+Control box order.
+
+```haskell
+λ> boxPlot p $ fac .= changeOrder t ["Dinner", "Lunch"]
+```
+
+<img src="https://cloud.githubusercontent.com/assets/197051/20642848/34abcd8c-b3e8-11e6-92e5-e39985ed05a4.png" alt="boxplot with manual order" width="400" height="300">
+
+If you want to compare more than two categorical variables you can use `factorPlot`.
+
+```haskell
+λ> gridTheme cleanTheme >> factorPlot b (fac .= s >> hue .= d >> col .= k)
+```
+
+<img src="https://cloud.githubusercontent.com/assets/197051/20642846/34a6210c-b3e8-11e6-82eb-91badd31c1d3.png" alt="boxplot with three factors" width="400" height="300">
+
+We can add labels.
+
+```haskell
+λ> factorPlot b $ fac .= s >> hue .= d >> col .= k >> colLabel .= "smoker"
+```
+
+<img src="https://cloud.githubusercontent.com/assets/197051/20642845/34a0c4c8-b3e8-11e6-8308-20aef22361f7.png" alt="labeled boxplot with three factors" width="400" height="300">
+
+You can compare up to four categorical variables using `factorPlot`.
+
+```haskell
+λ> factorPlot b $ fac .= s >> hue .= d >> col .= k >> row .= t
+```
+
+<img src="https://cloud.githubusercontent.com/assets/197051/20642844/349dc46c-b3e8-11e6-97d8-028e39308020.png" alt="boxplot with four factors" width="400" height="300">
 
 ## Rendering
 
