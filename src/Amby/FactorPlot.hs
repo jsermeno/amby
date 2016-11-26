@@ -27,15 +27,17 @@ factorPlotVec xs optsState
         color .= opts ^. color
         saturation .= opts ^. saturation
         axis .= opts ^. axis
+        catLabel .= opts ^. catLabel
+        datLabel .= opts ^. datLabel
     setGrid $ chartToGrid ambyChart
 
   -- Row chart
   | rows /= DefaultCategory && cols == DefaultCategory =
-    drawThirdFactor xs rows Chart.aboveN (catSize rows) 1 opts
+    drawThirdFactor xs rows Chart.aboveN (catSize rows) 1 (opts ^. rowLabel) opts
 
   -- Col chart
   | rows == DefaultCategory && cols /= DefaultCategory = do
-    drawThirdFactor xs cols Chart.besideN 1 (catSize cols) opts
+    drawThirdFactor xs cols Chart.besideN 1 (catSize cols) (opts ^. colLabel) opts
 
   -- Row and col chart
   | otherwise =
@@ -46,9 +48,9 @@ factorPlotVec xs optsState
     opts = execState optsState def
 
 drawThirdFactor :: V.Vector Double -> Category
-                -> ([ChartGrid] -> ChartGrid) -> Int -> Int
+                -> ([ChartGrid] -> ChartGrid) -> Int -> Int -> String
                 -> FactorPlotOpts -> AmbyGrid ()
-drawThirdFactor xs grouper gridGrouper nRows nCols opts = do
+drawThirdFactor xs grouper gridGrouper nRows nCols gLabel opts = do
   let cats = opts ^. catL
       hues = opts ^. hueL
       datGroups = groupByCategory (V.toList xs) grouper
@@ -56,6 +58,7 @@ drawThirdFactor xs grouper gridGrouper nRows nCols opts = do
       hueGroups = hues `groupCategoryBy` grouper
       factorOrder = getCategoryOrder grouper
       plotKind = opts ^. kind
+      drawAxis = opts ^. axis
   setGrid
     $ gridGrouper
     $ (`map` zip factorOrder [0..])
@@ -69,15 +72,31 @@ drawThirdFactor xs grouper gridGrouper nRows nCols opts = do
             catL .= catGroups `getGroupAt` i
             hueL .= hueGroups `getGroupAt` i
             catLegend .= if nCols > 1
-              then i == 0 || opts ^. axis == YAxis
-              else i == nRows - 1 || opts ^. axis == XAxis
+              then i == 0 || drawAxis == YAxis
+              else i == nRows - 1 || drawAxis == XAxis
             hueLegend .= if nCols > 1
               then i == 0
               else i == nRows - 1
             color .= opts ^. color
             saturation .= opts ^. saturation
             axis .= opts ^. axis
-          title (getCategoryLabelFromVal grouper factorVal)
+            catLabel .=
+              if   (drawAxis == XAxis && nCols > 1 && i == 0)
+                || (drawAxis == XAxis && nRows > 1)
+                || (drawAxis == YAxis && nCols > 1)
+                || (drawAxis == YAxis && nRows > 1 && i == nRows - 1)
+                then opts ^. catLabel
+                else ""
+            datLabel .=
+              if   (drawAxis == XAxis && nCols > 1)
+                || (drawAxis == XAxis && nRows > 1 && i == nRows - 1)
+                || (drawAxis == YAxis && nCols > 1 && i == 0)
+                || (drawAxis == YAxis && nRows > 1)
+                then opts ^. datLabel
+                else ""
+          title
+            $ mkGridLabel gLabel
+            ++ getCategoryLabelFromVal grouper factorVal
   gridScale (fromIntegral nCols, fromIntegral nRows)
 
 drawFourthFactor :: V.Vector Double -> Category -> Category -> FactorPlotOpts
@@ -98,10 +117,14 @@ drawFourthFactor xs rows cols opts =
     colGroups = cols `groupCategoryBy` rows
     rowOrder = getCategoryOrder rows
     colOrder = getCategoryOrder cols
+    nRows = length rowOrder
     plotKind = opts ^. kind
+    rLabel = opts ^. rowLabel
+    cLabel = opts ^. colLabel
+    drawAxis = opts ^. axis
 
     drawGridCell :: (Int, Int) -> (Int, Int) -> ChartGrid
-    drawGridCell (rowVal, i) (colVal, _) = do
+    drawGridCell (rowVal, i) (colVal, j) = do
       let rowColGroup = colGroups `getGroupAt` i
           colMask = map (== colVal) (getCategoryList rowColGroup)
       let rowDatGroup = case datGroups `atMay` i of
@@ -115,19 +138,34 @@ drawFourthFactor xs rows cols opts =
           boxPlotVec rowDatGroup $ do
             catL .= rowCatGroup
             hueL .= rowHueGroup
-            --catLegend .= if nCols > 1
-            --  then i == 0 || opts ^. axis == YAxis
-            --  else i == nRows - 1 || opts ^. axis == XAxis
-            --hueLegend .= if nCols > 1
-            --  then i == 0
-            --  else i == nRows - 1
+            catLegend .= if drawAxis == XAxis
+              then j == 0
+              else i == nRows - 1
+            hueLegend .= (j == 0 && i == nRows - 1)
             color .= opts ^. color
             saturation .= opts ^. saturation
             axis .= opts ^. axis
+            catLabel .=
+              if   (j == 0 && drawAxis == XAxis)
+                || (i == nRows - 1 && drawAxis == YAxis)
+                then opts ^. catLabel
+                else ""
+            datLabel .=
+              if   (i == nRows - 1 && drawAxis == XAxis)
+                || (j == 0 && drawAxis == YAxis)
+                then opts ^. datLabel
+                else ""
           title
-            $ getCategoryLabelFromVal rows rowVal
+            $ mkGridLabel rLabel
+            ++ getCategoryLabelFromVal rows rowVal
             ++ " | "
+            ++ mkGridLabel cLabel
             ++ getCategoryLabelFromVal cols colVal
+
+mkGridLabel :: String -> String
+mkGridLabel s = if null s
+  then s
+  else s ++ " = "
 
 modErr :: String -> String -> a
 modErr f err = error

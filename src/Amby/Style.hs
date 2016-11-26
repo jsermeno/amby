@@ -45,6 +45,8 @@ setThemeStyles theme = do
   Chart.layout_axes_styles . Chart.axis_grid_style . Chart.line_dashes .= []
   Chart.layout_axes_styles . Chart.axis_label_gap .= 8
   Chart.layout_margin .= 10
+  -- TODO: Chart does not give a way to specify space between axis
+  -- tick labels and axis label
 
 setDefaultThemeStyles :: Theme -> EC (Layout x y) ()
 setDefaultThemeStyles theme = do

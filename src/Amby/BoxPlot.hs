@@ -50,12 +50,17 @@ drawBoxPlot palette xs opts
     drawUnivariate (head catPalette) lineGray startPos barHeight xs "" opts
 
     -- Axis changes
+    -- TODO: Replace manual axis ranges with better automatic scaling
     axisGetter . Chart.laxis_generate .= scaledAxisCustom def
       ( mkAxisTuple
         (startPos - (barHeight / 2) - (1/8) * barHeight)
         (startPos + (barHeight / 2) + (1/8) * barHeight)
       )
     axisGetter . Chart.laxis_override .= categoricalAxisData []
+    axisGetter . Chart.laxis_title .= (opts ^. catLabel)
+    datAxisGetter . Chart.laxis_title .= (opts ^. datLabel)
+    -- TODO: Chart does not give a way to add a title to a legend, or
+    -- to change positon of legend
 
   -- Boxplot against categorical data
   | opts ^. hueL == DefaultCategory = do
@@ -73,6 +78,8 @@ drawBoxPlot palette xs opts
         (startPos + (barHeight / 2) + catMargin)
       )
     axisGetter . Chart.laxis_override .= categoricalAxisData catLabelPos
+    axisGetter . Chart.laxis_title .= (opts ^. catLabel)
+    datAxisGetter . Chart.laxis_title .= (opts ^. datLabel)
 
   -- Boxplot against two categories
   | otherwise = do
@@ -97,6 +104,8 @@ drawBoxPlot palette xs opts
         (startPos + (barHeight / 2) + hueMargin)
       )
     axisGetter . Chart.laxis_override .= categoricalAxisData hueLabelPos
+    axisGetter . Chart.laxis_title .= (opts ^. catLabel)
+    datAxisGetter . Chart.laxis_title .= (opts ^. datLabel)
   where
     cats = opts ^. catL
     hues = opts ^. hueL
@@ -142,6 +151,9 @@ drawBoxPlot palette xs opts
     axisGetter = if (opts ^. axis) == XAxis
       then Chart.layout_y_axis
       else Chart.layout_x_axis
+    datAxisGetter = if (opts ^. axis) == XAxis
+      then Chart.layout_x_axis
+      else Chart.layout_y_axis
 
 drawUnivariate :: (G.Vector v Double, G.Vector v (Double, Double))
                => AlphaColour Double -> AlphaColour Double

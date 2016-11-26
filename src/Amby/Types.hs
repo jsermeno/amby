@@ -75,6 +75,10 @@ module Amby.Types
   , hueL
   , rowL
   , colL
+  , datLabel
+  , catLabel
+  , rowLabel
+  , colLabel
   )
   where
 
@@ -165,6 +169,8 @@ data BoxPlotOpts = BoxPlotOpts
   , _boxPlotOptsLinewidth :: Double
   , _boxPlotOptsHueLegend :: Bool
   , _boxPlotOptsCatLegend :: Bool
+  , _boxPlotOptsDatLabel :: String
+  , _boxPlotOptsCatLabel :: String
   } deriving (Show)
 makeFields ''BoxPlotOpts
 
@@ -177,6 +183,11 @@ data FactorPlotOpts = FactorPlotOpts
   , _factorPlotOptsSaturation :: Double
   , _factorPlotOptsAxis :: Axis
   , _factorPlotOptsKind :: PlotKind
+  , _factorPlotOptsDatLabel :: String
+  , _factorPlotOptsCatLabel :: String
+  , _factorPlotOptsRowLabel :: String
+  , _factorPlotOptsColLabel :: String
+  -- TODO: Polymorphic setters for labels?
   } deriving (Show)
 makeFields ''FactorPlotOpts
 
@@ -472,6 +483,8 @@ instance Default BoxPlotOpts where
     , _boxPlotOptsLinewidth = 2
     , _boxPlotOptsCatLegend = True
     , _boxPlotOptsHueLegend = True
+    , _boxPlotOptsDatLabel = ""
+    , _boxPlotOptsCatLabel = ""
     }
 
 instance Default FactorPlotOpts where
@@ -484,4 +497,8 @@ instance Default FactorPlotOpts where
     , _factorPlotOptsSaturation = 0.8
     , _factorPlotOptsAxis = XAxis
     , _factorPlotOptsKind = Box
+    , _factorPlotOptsDatLabel = ""
+    , _factorPlotOptsCatLabel = ""
+    , _factorPlotOptsRowLabel = ""
+    , _factorPlotOptsColLabel = ""
     }
