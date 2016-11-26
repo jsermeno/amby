@@ -22,14 +22,11 @@ factorPlotVec xs optsState
   | rows == DefaultCategory && cols == DefaultCategory = do
     ambyChart <- case opts ^. kind of
       Box -> return $ boxPlotVec xs $ do
-        boxOpts <- get
-        put $ boxOpts
-          { _bpoCat = _fpoCat opts
-          , _bpoHue = _fpoHue opts
-          , _boxPlotOptsColor = opts ^. color
-          , _boxPlotOptsSaturation = opts ^. saturation
-          , _boxPlotOptsAxis = opts ^. axis
-          }
+        catL .= (opts ^. catL)
+        hueL .= (opts ^. hueL)
+        color .= opts ^. color
+        saturation .= opts ^. saturation
+        axis .= opts ^. axis
     setGrid $ chartToGrid ambyChart
 
   -- Row chart
@@ -41,18 +38,19 @@ factorPlotVec xs optsState
     drawThirdFactor xs cols Chart.besideN 1 (catSize cols) opts
 
   -- Row and col chart
-  | otherwise = undefined
+  | otherwise =
+    drawFourthFactor xs rows cols opts
   where
-    cols = _fpoCol opts
-    rows = _fpoRow opts
+    cols = opts ^. colL
+    rows = opts ^. rowL
     opts = execState optsState def
 
 drawThirdFactor :: V.Vector Double -> Category
                 -> ([ChartGrid] -> ChartGrid) -> Int -> Int
                 -> FactorPlotOpts -> AmbyGrid ()
 drawThirdFactor xs grouper gridGrouper nRows nCols opts = do
-  let cats = _fpoCat opts
-      hues = _fpoHue opts
+  let cats = opts ^. catL
+      hues = opts ^. hueL
       datGroups = groupByCategory (V.toList xs) grouper
       catGroups = cats `groupCategoryBy` grouper
       hueGroups = hues `groupCategoryBy` grouper
@@ -68,22 +66,68 @@ drawThirdFactor xs grouper gridGrouper nRows nCols opts = do
       case plotKind of
         Box -> chartToGrid $ do
           boxPlotVec datGroup $ do
-            boxOpts <- get
-            put $ boxOpts
-              { _bpoCat = catGroups `getGroupAt` i
-              , _bpoHue = hueGroups `getGroupAt` i
-              , _boxPlotOptsCatLegend = if nCols > 1
-                then i == 0 || opts ^. axis == YAxis
-                else i == nRows - 1 || opts ^. axis == XAxis
-              , _boxPlotOptsHueLegend = if nCols > 1
-                then i == 0
-                else i == nRows - 1
-              , _boxPlotOptsColor = opts ^. color
-              , _boxPlotOptsSaturation = opts ^. saturation
-              , _boxPlotOptsAxis = opts ^. axis
-              }
+            catL .= catGroups `getGroupAt` i
+            hueL .= hueGroups `getGroupAt` i
+            catLegend .= if nCols > 1
+              then i == 0 || opts ^. axis == YAxis
+              else i == nRows - 1 || opts ^. axis == XAxis
+            hueLegend .= if nCols > 1
+              then i == 0
+              else i == nRows - 1
+            color .= opts ^. color
+            saturation .= opts ^. saturation
+            axis .= opts ^. axis
           title (getCategoryLabelFromVal grouper factorVal)
   gridScale (fromIntegral nCols, fromIntegral nRows)
+
+drawFourthFactor :: V.Vector Double -> Category -> Category -> FactorPlotOpts
+                 -> AmbyGrid ()
+drawFourthFactor xs rows cols opts =
+      setGrid
+    $ Chart.aboveN
+    $ (`map` zip rowOrder [0..])
+    $ \rowIdx ->
+        Chart.besideN
+      $ (`map` zip colOrder [0..]) $ \colIdx -> drawGridCell rowIdx colIdx
+  where
+    cats = opts ^. catL
+    hues = opts ^. hueL
+    datGroups = groupByCategory (V.toList xs) rows
+    catGroups = cats `groupCategoryBy` rows
+    hueGroups = hues `groupCategoryBy` rows
+    colGroups = cols `groupCategoryBy` rows
+    rowOrder = getCategoryOrder rows
+    colOrder = getCategoryOrder cols
+    plotKind = opts ^. kind
+
+    drawGridCell :: (Int, Int) -> (Int, Int) -> ChartGrid
+    drawGridCell (rowVal, i) (colVal, _) = do
+      let rowColGroup = colGroups `getGroupAt` i
+          colMask = map (== colVal) (getCategoryList rowColGroup)
+      let rowDatGroup = case datGroups `atMay` i of
+            Nothing -> modErr "drawFourthFactor" $ "No group at index: " ++ show i
+            Just a -> V.fromList $ filterMask a colMask
+          rowCatGroup = getGroupWithFilterMask catGroups i colMask
+          rowHueGroup = getGroupWithFilterMask hueGroups i colMask
+
+      case plotKind of
+        Box -> chartToGrid $ do
+          boxPlotVec rowDatGroup $ do
+            catL .= rowCatGroup
+            hueL .= rowHueGroup
+            --catLegend .= if nCols > 1
+            --  then i == 0 || opts ^. axis == YAxis
+            --  else i == nRows - 1 || opts ^. axis == XAxis
+            --hueLegend .= if nCols > 1
+            --  then i == 0
+            --  else i == nRows - 1
+            color .= opts ^. color
+            saturation .= opts ^. saturation
+            axis .= opts ^. axis
+          title
+            $ getCategoryLabelFromVal rows rowVal
+            ++ " | "
+            ++ getCategoryLabelFromVal cols colVal
 
 modErr :: String -> String -> a
 modErr f err = error

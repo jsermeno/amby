@@ -46,7 +46,7 @@ drawBoxPlot :: (G.Vector v Double, G.Vector v (Double, Double))
             -> EC (Layout Double Double) ()
 drawBoxPlot palette xs opts
   -- Boxplot for univariate distribution
-  | _bpoCat opts == DefaultCategory = do
+  | opts ^. catL == DefaultCategory = do
     drawUnivariate (head catPalette) lineGray startPos barHeight xs "" opts
 
     -- Axis changes
@@ -58,9 +58,9 @@ drawBoxPlot palette xs opts
     axisGetter . Chart.laxis_override .= categoricalAxisData []
 
   -- Boxplot against categorical data
-  | _bpoHue opts == DefaultCategory = do
+  | opts ^. hueL == DefaultCategory = do
     -- group data
-    let groups = groupByCategory (G.toList xs) (_bpoCat opts)
+    let groups = groupByCategory (G.toList xs) (opts ^. catL)
 
     -- draw data
     forM_ (zip3 groups catPalette [0..]) $ \(g, c, i) ->
@@ -98,8 +98,8 @@ drawBoxPlot palette xs opts
       )
     axisGetter . Chart.laxis_override .= categoricalAxisData hueLabelPos
   where
-    cats = _bpoCat opts
-    hues = _bpoHue opts
+    cats = opts ^. catL
+    hues = opts ^. hueL
     catLabels = getCategoryLabels cats
     nCats = catSize cats
     nHues = catSize hues

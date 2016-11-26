@@ -14,10 +14,12 @@ module Amby.Categorical
   , getCategoryOrder
   , getCategoryList
   , catSize
+  , catValsLength
   , filterMask
   , groupByCategory
   , groupCategoryBy
   , getGroupAt
+  , getGroupWithFilterMask
   ) where
 
 import qualified Data.Foldable as Foldable
@@ -87,6 +89,18 @@ getGroupAt cat i = cat
     { _categoryValues = groupValues
     }
   where
+    groupValues = getGroupValues cat i
+
+getGroupWithFilterMask :: Category -> Int -> [Bool] -> Category
+getGroupWithFilterMask cat i mask = cat
+    { _categoryValues = filterMask groupValues mask
+    }
+  where
+    groupValues = getGroupValues cat i
+
+getGroupValues :: Category -> Int -> [Int]
+getGroupValues cat i = groupValues
+  where
     dat = _categoryGroups cat
     groupValues = case dat `atMay` i of
       Just a -> a
@@ -113,6 +127,10 @@ filterMask xs ts
 catSize :: Category -> Int
 catSize DefaultCategory = 1
 catSize cat = Map.size (_categoryTable cat)
+
+-- | Find the number of elements in a category.
+catValsLength :: Category -> Int
+catValsLength c = length $ getCategoryList c
 
 -- | Convert 'Foldable' into a 'Category'.
 toCat :: (Foldable f, Ord a, Show a) => f a -> Category

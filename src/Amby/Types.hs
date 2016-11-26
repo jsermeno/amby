@@ -71,6 +71,10 @@ module Amby.Types
   , row
   , col
   , saturation
+  , catL
+  , hueL
+  , rowL
+  , colL
   )
   where
 
@@ -153,8 +157,8 @@ data RugPlotOpts = RugPlotOpts
 makeFields ''RugPlotOpts
 
 data BoxPlotOpts = BoxPlotOpts
-  { _bpoCat :: Category
-  , _bpoHue :: Category
+  { _boxPlotOptsCatL :: Category
+  , _boxPlotOptsHueL :: Category
   , _boxPlotOptsColor :: AmbyColor
   , _boxPlotOptsSaturation :: Double
   , _boxPlotOptsAxis :: Axis
@@ -165,10 +169,10 @@ data BoxPlotOpts = BoxPlotOpts
 makeFields ''BoxPlotOpts
 
 data FactorPlotOpts = FactorPlotOpts
-  { _fpoCat :: Category
-  , _fpoHue :: Category
-  , _fpoCol :: Category
-  , _fpoRow :: Category
+  { _factorPlotOptsCatL :: Category
+  , _factorPlotOptsHueL :: Category
+  , _factorPlotOptsColL :: Category
+  , _factorPlotOptsRowL :: Category
   , _factorPlotOptsColor :: AmbyColor
   , _factorPlotOptsSaturation :: Double
   , _factorPlotOptsAxis :: Axis
@@ -179,38 +183,46 @@ makeFields ''FactorPlotOpts
 class HasCat s a b | s -> a where
   cat :: Setter s s a b
 instance (Foldable f, Ord a, Show a) => HasCat BoxPlotOpts Category (f a) where
-  cat = sets (\a b -> b { _bpoCat = (toCat . a) (_bpoCat b) })
+  cat = sets (\a b -> b { _boxPlotOptsCatL = (toCat . a) (_boxPlotOptsCatL b) })
 instance HasCat BoxPlotOpts Category Category where
-  cat = sets (\a b -> b { _bpoCat = a (_bpoCat b) })
+  cat = sets (\a b -> b { _boxPlotOptsCatL = a (_boxPlotOptsCatL b) })
 instance (Foldable f, Ord a, Show a) => HasCat FactorPlotOpts Category (f a) where
-  cat = sets (\a b -> b { _fpoCat = (toCat . a) (_fpoCat b) })
+  cat = sets (\a b -> b
+    { _factorPlotOptsCatL = (toCat . a) (_factorPlotOptsCatL b)
+    })
 instance HasCat FactorPlotOpts Category Category where
-  cat = sets (\a b -> b { _fpoCat = a (_fpoCat b) })
+  cat = sets (\a b -> b { _factorPlotOptsCatL = a (_factorPlotOptsCatL b) })
 
 class HasHue s a b | s -> a where
   hue :: Setter s s a b
 instance (Foldable f, Ord a, Show a) => HasHue BoxPlotOpts Category (f a) where
-  hue = sets (\a b -> b { _bpoHue = (toCat . a) (_bpoHue b) })
+  hue = sets (\a b -> b { _boxPlotOptsHueL = (toCat . a) (_boxPlotOptsHueL b) })
 instance HasHue BoxPlotOpts Category Category where
-  hue = sets (\a b -> b { _bpoHue = a (_bpoHue b) })
+  hue = sets (\a b -> b { _boxPlotOptsHueL = a (_boxPlotOptsHueL b) })
 instance (Foldable f, Ord a, Show a) => HasHue FactorPlotOpts Category (f a) where
-  hue = sets (\a b -> b { _fpoHue = (toCat . a) (_fpoHue b) })
+  hue = sets (\a b -> b
+    { _factorPlotOptsHueL = (toCat . a) (_factorPlotOptsHueL b)
+    })
 instance HasHue FactorPlotOpts Category Category where
-  hue = sets (\a b -> b { _fpoHue = a (_fpoHue b) })
+  hue = sets (\a b -> b { _factorPlotOptsHueL = a (_factorPlotOptsHueL b) })
 
 class HasCol s a b | s -> a where
   col :: Setter s s a b
 instance (Foldable f, Ord a, Show a) => HasCol FactorPlotOpts Category (f a) where
-  col = sets (\a b -> b { _fpoCol = (toCat . a) (_fpoCol b) })
+  col = sets (\a b -> b
+    { _factorPlotOptsColL = (toCat . a) (_factorPlotOptsColL b)
+    })
 instance HasCol FactorPlotOpts Category Category where
-  col = sets (\a b -> b { _fpoCol = a (_fpoCol b) })
+  col = sets (\a b -> b { _factorPlotOptsColL = a (_factorPlotOptsColL b) })
 
 class HasRow s a b | s -> a where
   row :: Setter s s a b
 instance (Foldable f, Ord a, Show a) => HasRow FactorPlotOpts Category (f a) where
-  row = sets (\a b -> b { _fpoRow = (toCat . a) (_fpoRow b) })
+  row = sets (\a b -> b
+    { _factorPlotOptsRowL = (toCat . a) (_factorPlotOptsRowL b)
+    })
 instance HasRow FactorPlotOpts Category Category where
-  row = sets (\a b -> b { _fpoRow = a (_fpoRow b) })
+  row = sets (\a b -> b { _factorPlotOptsRowL = a (_factorPlotOptsRowL b) })
 
 -----------------------------------
 -- Main types
@@ -452,8 +464,8 @@ instance Default RugPlotOpts where
 
 instance Default BoxPlotOpts where
   def = BoxPlotOpts
-    { _bpoCat = DefaultCategory
-    , _bpoHue = DefaultCategory
+    { _boxPlotOptsCatL = DefaultCategory
+    , _boxPlotOptsHueL = DefaultCategory
     , _boxPlotOptsColor = DefaultColor
     , _boxPlotOptsSaturation = 0.8
     , _boxPlotOptsAxis = XAxis
@@ -464,10 +476,10 @@ instance Default BoxPlotOpts where
 
 instance Default FactorPlotOpts where
   def = FactorPlotOpts
-    { _fpoCat = DefaultCategory
-    , _fpoHue = DefaultCategory
-    , _fpoCol = DefaultCategory
-    , _fpoRow = DefaultCategory
+    { _factorPlotOptsCatL = DefaultCategory
+    , _factorPlotOptsHueL = DefaultCategory
+    , _factorPlotOptsColL = DefaultCategory
+    , _factorPlotOptsRowL = DefaultCategory
     , _factorPlotOptsColor = DefaultColor
     , _factorPlotOptsSaturation = 0.8
     , _factorPlotOptsAxis = XAxis
