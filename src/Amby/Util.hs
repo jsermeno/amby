@@ -45,6 +45,7 @@ import Paths_amby (getDataFileName)
 
 import Numeric.Datasets (Dataset, getDataset)
 import qualified Numeric.Datasets.Iris as Iris
+import Text.Display
 
 import Amby.Categorical
 
@@ -60,12 +61,12 @@ data Tip = Tip
   , _tipDay :: !String
   , _tipTime :: !String
   , _tipTipSize :: !Int
-  } deriving (Generic)
+  } deriving (Show, Generic)
 makeFields ''Tip
 
-instance Show Tip where
-  show t =
-      showString "Tip "
+instance Display Tip where
+  display t = mkDtStr
+    $ showString "Tip "
     $ showString "{totalBill = "
     $ showString (show (_tipTotalBill t))
     $ showString ", tip = "

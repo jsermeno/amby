@@ -51,7 +51,7 @@ library
                      , data-default-class
                      , Chart-cairo
                      , Chart-diagrams
-                     , Chart
+                     , Chart >= 1.6
                      , text
                      , vector
                      , vector-algorithms

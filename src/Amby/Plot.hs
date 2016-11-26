@@ -358,7 +358,7 @@ getEC :: AmbyChart () -> EC (Layout Double Double) ()
 getEC compute = getLayout $ execState compute def
 
 -- | Convert 'AmbyGrid' into Chart's 'Renderable a'.
-getRenderable :: AmbyChart () -> Renderable (LayoutPick Double Double Double)
+getRenderable :: Saveable s => s -> Renderable (LayoutPick Double Double Double)
 getRenderable ch = getSaveObjectRenderable (toSaveObject ch)
 
 -- Short-hand to render to png file using Cairo backend.

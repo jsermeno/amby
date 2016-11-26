@@ -7,13 +7,13 @@ module Amby.Display where
 
 import Control.Monad.Catch
 import Data.Default (def)
-import Text.Display
 import System.IO.Unsafe (unsafePerformIO)
 import System.Exit (ExitCode(..))
 import System.Process (readProcessWithExitCode)
 
 import Graphics.Rendering.Chart.Easy (Layout, EC)
 import qualified Graphics.Rendering.Chart.Backend.Cairo as Cairo
+import Text.Display
 
 import qualified Amby.Plot as Plot
 import Amby.Types

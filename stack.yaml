@@ -46,7 +46,7 @@ packages:
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
 extra-deps:
-- pretty-display-0.1.9
+- pretty-display-0.1.10
 - datasets-0.1.0.1
 
 # Override default flag values for local packages and extra-deps

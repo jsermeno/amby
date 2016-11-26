@@ -210,14 +210,14 @@ First, Amby provides the helper functions `save` and `saveSvg` that will save a 
 λ> saveSvg $ distPlot' z
 ```
 
-Second, you can use any rendering methods that the underlying [Chart](https://github.com/timbod7/haskell-chart) library provides by converting an `AmbyChart ()` to a `EC (Layout Double Double) ()` with the `getEC` function.
+Second, you can use any rendering methods that the underlying [Chart](https://github.com/timbod7/haskell-chart) library provides by converting an `AmbyChart ()` or `AmbyGrid ()` to a `Renderable (LayoutPick Double Double Double)` with the `getRenderable` function.
 
 ```haskell
 λ> import Graphics.Rendering.Chart.Easy (def)
 λ> import Graphics.Rendering.Chart.Backend.Cairo as Cairo
 λ> import Graphics.Rendering.Chart.Backend.Diagrams as Diagrams
-λ> Cairo.toFile def "myFile.png" $ getEC $ distPlot' z
-λ> Diagrams.toFile def "myFile.svg" $ getEC $ distPlot' z
+λ> Cairo.renderableToFile def "myFile.png" $ getRenderable $ distPlot' z
+λ> Diagrams.renderableToFile def "myFile.svg" $ getRenderable $ distPlot' z
 ```
 
 Third—if you have a terminal that supports images such as iTerm2—you can display charts directly inside the GHCi repl. Just install the [`imgcat`](https://github.com/eddieantonio/imgcat#Build) executable, and the [`pretty-display`](https://github.com/jsermeno/pretty-display) library. See [here](https://github.com/jsermeno/amby#dependencies) for further installation instructions.
