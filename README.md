@@ -7,7 +7,7 @@
 <img src="https://cloud.githubusercontent.com/assets/197051/20501027/02c44a82-b006-11e6-9589-91dd9fe141c0.png" alt="normal distribution plot" width="200" height="150">
 <img src="https://cloud.githubusercontent.com/assets/197051/20501025/0182f9de-b006-11e6-8a38-24b081b9892c.png" alt="clean theme equation plot" width="200" height="150">
 <img src="https://cloud.githubusercontent.com/assets/197051/20501066/37c7f0ee-b006-11e6-91b8-b951cafa4100.png" alt="multiple beta distributions" width="200" height="150">
-<img src="https://cloud.githubusercontent.com/assets/197051/20642844/349dc46c-b3e8-11e6-97d8-028e39308020.png" alt="boxplot with empty bins" width="200" height="150">
+<img src="https://cloud.githubusercontent.com/assets/197051/20642847/34a870ec-b3e8-11e6-90c9-ed7885be476d.png" alt="boxplot with empty bins" width="200" height="150">
 
 A statistics visualization library built on top of [Chart](https://github.com/timbod7/haskell-chart) inspired by [Seaborn](https://github.com/mwaskom/seaborn). Amby provides a high level interface to quickly display attractive visualizations. Amby also provides tools to display Charts from both Amby and the Chart package within GHCi.
 
