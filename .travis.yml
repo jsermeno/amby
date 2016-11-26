@@ -29,9 +29,9 @@ matrix:
     compiler: ": #stack default"
     addons: {apt: {packages: [libgmp-dev,ghc-7.10.3,happy-1.19.5,alex-3.1.7,libgtk-3-dev,libghc-gtk-dev], sources: [hvr-ghc]}}
 
-  - env: BUILD=stack ARGS="--resolver lts-3" GHCVER=7.10.2
-    compiler: ": #stack 7.10.2"
-    addons: {apt: {packages: [libgmp-dev,ghc-7.10.2,happy-1.19.5,alex-3.1.7,libgtk-3-dev,libghc-gtk-dev], sources: [hvr-ghc]}}
+  #- env: BUILD=stack ARGS="--resolver lts-3" GHCVER=7.10.2
+  #  compiler: ": #stack 7.10.2"
+  #  addons: {apt: {packages: [libgmp-dev,ghc-7.10.2,happy-1.19.5,alex-3.1.7,libgtk-3-dev,libghc-gtk-dev], sources: [hvr-ghc]}}
 
   - env: BUILD=stack ARGS="--resolver lts-6" GHCVER=7.10.3
     compiler: ": #stack 7.10.3"
