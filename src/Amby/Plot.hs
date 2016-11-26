@@ -63,7 +63,7 @@ instance AmbyContainer (V.Vector Double) where
   rugPlot' = rugPlotVec'
   boxPlot = boxPlotVec
   boxPlot' = boxPlotVec'
-  factorPlot v = factorPlotVec (G.convert v)
+  factorPlot = factorPlotVec
 
 instance AmbyContainer (U.Vector Double) where
   type Value (U.Vector Double) = Double
@@ -80,9 +80,9 @@ instance AmbyContainer (U.Vector Double) where
   rugPlot' = rugPlotVec'
   boxPlot = boxPlotVec
   boxPlot' = boxPlotVec'
-  factorPlot = factorPlotVec
+  factorPlot v = factorPlotVec (G.convert v)
 
-instance (Real a, U.Unbox a) => AmbyContainer [a] where
+instance (Real a) => AmbyContainer [a] where
   type Value [a] = a
 
   plot x y optsState = plotList vals opts
@@ -112,8 +112,8 @@ instance (Real a, U.Unbox a) => AmbyContainer [a] where
 
   factorPlot xs optsState = factorPlotVec (realToVec xs) optsState
 
-realToVec :: (Real a, U.Unbox a) => [a] -> U.Vector Double
-realToVec = U.map realToFrac . U.fromList
+realToVec :: (Real a) => [a] -> V.Vector Double
+realToVec = V.map realToFrac . V.fromList
 
 realToTuple :: Real a => a -> a -> (Double, Double)
 realToTuple a b = (realToFrac a, realToFrac b)

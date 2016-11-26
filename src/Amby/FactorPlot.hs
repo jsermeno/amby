@@ -7,7 +7,7 @@ module Amby.FactorPlot
 import Control.Lens
 import Control.Monad.State
 import Data.Default (def)
-import qualified Data.Vector.Unboxed as U
+import qualified Data.Vector as V
 
 import qualified Graphics.Rendering.Chart.Grid as Chart
 import Safe
@@ -16,16 +16,16 @@ import Amby.BoxPlot
 import Amby.Categorical
 import Amby.Types
 
-factorPlotVec :: U.Vector Double -> State FactorPlotOpts () -> AmbyGrid ()
+factorPlotVec :: V.Vector Double -> State FactorPlotOpts () -> AmbyGrid ()
 factorPlotVec xs optsState
   -- Single plot
   | rows == DefaultCategory && cols == DefaultCategory = do
-    ambyChart <- case plotKind of
+    ambyChart <- case opts ^. kind of
       Box -> return $ boxPlotVec xs $ do
         boxOpts <- get
         put $ boxOpts
-          { _bpoCat = cats
-          , _bpoHue = hues
+          { _bpoCat = _fpoCat opts
+          , _bpoHue = _fpoHue opts
           , _boxPlotOptsColor = opts ^. color
           , _boxPlotOptsSaturation = opts ^. saturation
           , _boxPlotOptsAxis = opts ^. axis
@@ -43,20 +43,17 @@ factorPlotVec xs optsState
   -- Row and col chart
   | otherwise = undefined
   where
-    cats = _fpoCat opts
-    hues = _fpoHue opts
     cols = _fpoCol opts
     rows = _fpoRow opts
     opts = execState optsState def
-    plotKind = opts ^. kind
 
-drawThirdFactor :: U.Vector Double -> Category
+drawThirdFactor :: V.Vector Double -> Category
                 -> ([ChartGrid] -> ChartGrid) -> Int -> Int
                 -> FactorPlotOpts -> AmbyGrid ()
 drawThirdFactor xs grouper gridGrouper nRows nCols opts = do
   let cats = _fpoCat opts
       hues = _fpoHue opts
-      datGroups = groupByCategory (U.toList xs) grouper
+      datGroups = groupByCategory (V.toList xs) grouper
       catGroups = cats `groupCategoryBy` grouper
       hueGroups = hues `groupCategoryBy` grouper
       factorOrder = getCategoryOrder grouper
@@ -66,7 +63,7 @@ drawThirdFactor xs grouper gridGrouper nRows nCols opts = do
     $ (`map` zip factorOrder [0..])
     $ \(factorVal, i) -> do
       let datGroup = case datGroups `atMay` i of
-            Just a -> U.fromList a
+            Just a -> V.fromList a
             Nothing -> modErr "drawThirdFactor" $ "No group at index: " ++ show i
       case plotKind of
         Box -> chartToGrid $ do
