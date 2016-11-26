@@ -6,6 +6,7 @@
 {-# LANGUAGE CPP #-}
 module Amby.Style
   ( setThemeStyles
+  , setDefaultThemeStyles
   , scaledAxisCustom
   , categoricalAxisData
   )
@@ -43,9 +44,13 @@ setThemeStyles theme = do
   Chart.layout_axes_styles . Chart.axis_grid_style . Chart.line_width .= 1.5
   Chart.layout_axes_styles . Chart.axis_grid_style . Chart.line_dashes .= []
   Chart.layout_axes_styles . Chart.axis_label_gap .= 8
+  Chart.layout_margin .= 10
+
+setDefaultThemeStyles :: Theme -> EC (Layout x y) ()
+setDefaultThemeStyles theme = do
+  setThemeStyles theme
   Chart.layout_x_axis . Chart.laxis_override .= roundAxisData
   Chart.layout_y_axis . Chart.laxis_override .= roundAxisData
-  Chart.layout_margin .= 10
 
 --- | Equalizes precision for all labels.
 --- For example the labels [0, 0.2] become [0.0, 0.2].
@@ -65,6 +70,7 @@ categoricalAxisData :: [(x, String)] -> Chart.AxisData x -> Chart.AxisData x
 categoricalAxisData labels axisData = axisData
   & Chart.axis_grid .~ []
   & Chart.axis_labels .~ [labels]
+  & Chart.axis_ticks .~ []
 
 ------------------------
 -- Scaling

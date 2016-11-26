@@ -86,7 +86,10 @@ random d n = withSystemRandom . asGenST $ \gen ->
 -- >>> scoreAtPercentile a 50
 -- 49.5
 scoreAtPercentile :: (G.Vector v Double) => v Double -> Int -> Double
-scoreAtPercentile xs p = Stats.weightedAvg p 100 xs
+scoreAtPercentile xs p
+  | G.length xs == 0 =
+    modErr "scoreAtPercentile" "Cannot find percentile of empyt list"
+  | otherwise = Stats.weightedAvg p 100 xs
 
 -- | Calculate the interquartile range.
 --
@@ -113,3 +116,9 @@ freedmanDiaconisBins xs =
   where
     n = G.length xs
     h = 2 * interquartileRange xs / fromIntegral n ** (1 / 3)
+
+modErr :: String -> String -> a
+modErr f err = error
+  $ showString "Amby.Numeric."
+  $ showString f
+  $ showString ": " err

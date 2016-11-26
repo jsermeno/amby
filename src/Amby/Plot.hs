@@ -8,6 +8,7 @@
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
 module Amby.Plot
   ( getEC
+  , getRenderable
   , save
   , saveSvg
 
@@ -28,7 +29,7 @@ import qualified Data.Vector.Unboxed as U
 import Control.Lens
 import Data.Colour as Colour
 import Data.Default.Class
-import Graphics.Rendering.Chart.Easy (Layout, EC)
+import Graphics.Rendering.Chart.Easy (Layout, EC, Renderable, LayoutPick)
 import qualified Graphics.Rendering.Chart.Easy as Chart
 import qualified Graphics.Rendering.Chart.Backend.Cairo as Cairo
 import qualified Graphics.Rendering.Chart.Backend.Diagrams as Diagrams
@@ -38,6 +39,7 @@ import qualified Statistics.Sample as Stats
 
 import Amby.BoxPlot
 import Amby.Compatibility.HistogramPlot
+import Amby.FactorPlot
 import Amby.Numeric
 import Amby.Theme (toColour)
 import Amby.Types
@@ -61,6 +63,7 @@ instance AmbyContainer (V.Vector Double) where
   rugPlot' = rugPlotVec'
   boxPlot = boxPlotVec
   boxPlot' = boxPlotVec'
+  factorPlot v = factorPlotVec (G.convert v)
 
 instance AmbyContainer (U.Vector Double) where
   type Value (U.Vector Double) = Double
@@ -77,8 +80,9 @@ instance AmbyContainer (U.Vector Double) where
   rugPlot' = rugPlotVec'
   boxPlot = boxPlotVec
   boxPlot' = boxPlotVec'
+  factorPlot = factorPlotVec
 
-instance (Real a) => AmbyContainer [a] where
+instance (Real a, U.Unbox a) => AmbyContainer [a] where
   type Value [a] = a
 
   plot x y optsState = plotList vals opts
@@ -106,8 +110,10 @@ instance (Real a) => AmbyContainer [a] where
   boxPlot xs optsState = boxPlotVec (realToVec xs) optsState
   boxPlot' xs = boxPlot xs $ return ()
 
-realToVec :: Real a => [a] -> V.Vector Double
-realToVec = V.map realToFrac . V.fromList
+  factorPlot xs optsState = factorPlotVec (realToVec xs) optsState
+
+realToVec :: (Real a, U.Unbox a) => [a] -> U.Vector Double
+realToVec = U.map realToFrac . U.fromList
 
 realToTuple :: Real a => a -> a -> (Double, Double)
 realToTuple a b = (realToFrac a, realToFrac b)
@@ -351,25 +357,26 @@ diagramsDefSave = ".__amby.svg"
 getEC :: AmbyChart () -> EC (Layout Double Double) ()
 getEC compute = getLayout $ execState compute def
 
-getState :: AmbyChart () -> AmbyState
-getState compute = execState compute def
+-- | Convert 'AmbyGrid' into Chart's 'Renderable a'.
+getRenderable :: AmbyChart () -> Renderable (LayoutPick Double Double Double)
+getRenderable ch = getSaveObjectRenderable (toSaveObject ch)
 
 -- Short-hand to render to png file using Cairo backend.
-save :: AmbyChart () -> IO ()
-save chart = Cairo.toFile
+save :: Saveable s => s -> IO ()
+save chart = void $ Cairo.renderableToFile
     def { Cairo._fo_size = newSize }
     cairoDefSave
-    (getLayout st)
+    (getSaveObjectRenderable so)
   where
-    st = getState chart
-    newSize = getSize st
+    so = toSaveObject chart
+    newSize = getSize so
 
 -- | Short-hand to render to svg using Cairo backend
-saveSvg :: AmbyChart () -> IO ()
-saveSvg chart = Diagrams.toFile
+saveSvg :: Saveable s => s -> IO ()
+saveSvg chart = void $ Diagrams.renderableToFile
     def { Diagrams._fo_size = join (***) fromIntegral newSize }
     diagramsDefSave
-    (getLayout st)
+    (getSaveObjectRenderable so)
   where
-    st = getState chart
-    newSize = getSize st
+    so = toSaveObject chart
+    newSize = getSize so

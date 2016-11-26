@@ -10,16 +10,14 @@ module Amby.Categorical
   , toCat
   , toCatOrdered
   , getCategoryLabels
+  , getCategoryLabelFromVal
+  , getCategoryOrder
+  , getCategoryList
   , catSize
-  , filterByCategory
-  , filterByCategory2
-  , filterByCategories
-  , listToRose
-  , zipRoseLeaves
-  , roseLengths
-  , roseToList
-  , nextLevelAreLeaves
-  , groupSortRose
+  , filterMask
+  , groupByCategory
+  , groupCategoryBy
+  , getGroupAt
   ) where
 
 import qualified Data.Foldable as Foldable
@@ -27,155 +25,84 @@ import qualified Data.List.Extra as L
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Tuple (swap)
-import qualified Data.Vector.Generic as G
 
 import Control.Lens
+import Safe
 
 data Category = Category
   { _categoryOrder :: [Int]
   , _categoryValues :: [Int]
   , _categoryTable :: Map Int String
+  , _categoryGroups :: [[Int]]
   }
   | DefaultCategory
   deriving (Show, Eq)
 
 -- | Get list of category labels in order.
 getCategoryLabels :: Category -> [String]
-getCategoryLabels c = map (labelMap Map.!) intOrder
+getCategoryLabels c = map lookupLabel intOrder
   where
     labelMap = _categoryTable c
     intOrder = _categoryOrder c
+    lookupLabel i = case Map.lookup i labelMap of
+      Just a -> a
+      Nothing -> modErr "getCategoryLabels" "Value does not exist in category"
 
--- | Segment vector by category
-filterByCategory :: G.Vector v Double => v Double -> Category -> [v Double]
-filterByCategory xs cat =
-    map (G.fromList . map leafToValue)
-  $ map roseChildList
-  $ roseChildList
-  $ filterByCategories xs [cat]
+getCategoryLabelFromVal :: Category -> Int -> String
+getCategoryLabelFromVal c i = case Map.lookup i (_categoryTable c) of
+  Just a -> a
+  Nothing -> modErr "getCategoryLabelFromVal" "Value does not exist in category"
 
-filterByCategory2 :: G.Vector v Double => v Double -> Category -> Category
-                  -> [[v Double]]
-filterByCategory2 xs cat1 cat2 =
-    map (map (G.fromList . map leafToValue))
-  $ map (map roseChildList)
-  $ map roseChildList
-  $ roseChildList
-  $ filterByCategories xs [cat1, cat2]
+getCategoryList :: Category -> [Int]
+getCategoryList = _categoryValues
 
-filterByCategories :: G.Vector v Double => v Double -> [Category] -> Rose Double
-filterByCategories vec cs = go cs xs
+getCategoryOrder :: Category -> [Int]
+getCategoryOrder = _categoryOrder
+
+-- | Group by category.
+--
+-- Examples:
+--
+-- >>> groupByCategory [1..5] (toCat [1, 1, 3, 2, 4])
+-- [[1,2],[4],[3],[5]]
+groupByCategory :: [a] -> Category -> [[a]]
+groupByCategory xs cat
+  | length xs /= length (getCategoryList cat) =
+    modErr "groupByCategory" "Can only group data with equivalent sized category"
+  | otherwise =
+      map (map fst)
+    $ L.groupSortOn snd
+    $ zip xs (_categoryValues cat)
+
+-- | Group category internally
+groupCategoryBy :: Category -> Category -> Category
+groupCategoryBy cat grouper = cat
+    { _categoryGroups = groupByCategory dat grouper
+    }
   where
-    xs = listToRose $ G.toList vec
-    go [] r = r
-    go (c:rest) r
-      | roseLength r /= length (_categoryValues c) =
-        modErr "filterByCategories" "Category and data must be of the same size"
-      | otherwise = go rest segmented
-      where
-        segmented = groupSortRose $ zipRoseLeaves r (_categoryValues c)
+    dat = _categoryValues cat
 
-data Rose a where
-  Leaf :: Show a => a -> Rose a
-  Rose :: Show a => Int -> [Rose a] -> Rose a
-deriving instance Show (Rose a)
-
--- | Create initial layer of rose tree.
---
--- Examples:
---
--- >>> listToRose [1..5]
--- Rose 5 [Leaf 1,Leaf 2,Leaf 3,Leaf 4,Leaf 5]
-listToRose :: Show a => [a] -> Rose a
-listToRose xs = Rose (length xs) (map Leaf xs)
-
--- | Convert rose tree to list.
---
--- Examples:
---
--- >>> let r = listToRose [1..3]
--- >>> roseToList r
--- [1,2,3]
-roseToList :: Rose a -> [a]
-roseToList (Rose _ rs) = concatMap roseToList rs
-roseToList (Leaf l) = [l]
-
--- | Group and sort rose tree based in first element in tuple.
---
--- Examples:
---
--- >>> let r = listToRose [1..5]
--- >>> let cat1 = [1, 2, 1, 2, 1]
--- >>> let cat2 = [3, 4, 1, 3, 2]
--- >>> groupSortRose (zipRoseLeaves r cat1)
--- Rose 5 [Rose 4 [Leaf 1,Leaf 3,Leaf 5],Rose 2 [Leaf 2,Leaf 4]]
---
--- >>> let r' = groupSortRose (zipRoseLeaves r cat1)
--- >>> groupSortRose (zipRoseLeaves r' cat2)
--- Rose 5 [Rose 4 [],Rose 2[]]
-groupSortRose :: Show a => Rose (Int, a) -> Rose a
-groupSortRose r@(Rose i rs)
-  | nextLevelAreLeaves r =
-      Rose i
-    $ map (listToRose . (map snd))
-    $ L.groupSortOn fst
-    $ map leafToValue rs
-  | otherwise = Rose i (map groupSortRose rs)
-groupSortRose _ = modErr "groupSortRose" "Invalid rose tree shape"
-
--- | Zip operation on leaves of rose tree.
---
--- Examples:
---
--- >>> let r = listToRose [1..3]
--- >>> zipRoseLeaves r [1, 2, 1]
--- Rose 3 [Leaf (1,1),Leaf (2,2),Leaf (1,3)]
-zipRoseLeaves :: Rose a -> [Int] -> Rose (Int, a)
-zipRoseLeaves (Rose n rs) cs = Rose n zipped
+getGroupAt :: Category -> Int -> Category
+getGroupAt cat i = cat
+    { _categoryValues = groupValues
+    }
   where
-    intChunks = splitChunks cs (roseLengths rs)
-    zipped = zipWith zipRoseLeaves rs intChunks
-zipRoseLeaves (Leaf l) [c] = Leaf (c, l)
-zipRoseLeaves _ _ = modErr "zipRoseLeafs" "Invalid branch"
+    dat = _categoryGroups cat
+    groupValues = case dat `atMay` i of
+      Just a -> a
+      Nothing -> modErr "getGroupAt" ("No group at index: " ++ show i)
 
-roseLengths :: [Rose a] -> [Int]
-roseLengths = map roseLength
-
-roseLength :: Rose a -> Int
-roseLength (Rose i _) = i
-roseLength (Leaf _) = 1
-
-nextLevelAreLeaves :: Rose a -> Bool
-nextLevelAreLeaves (Rose _ rs) = areLeaves rs
-nextLevelAreLeaves _ = False
-
-areLeaves :: [Rose a] -> Bool
-areLeaves [] = True
-areLeaves ((Leaf _):_) = True
-areLeaves _ = False
-
-leafToValue :: Rose a -> a
-leafToValue (Leaf l) = l
-leafToValue _ = modErr "leafToValue" "Rose is not a leaf"
-
-roseChildList :: Rose a -> [Rose a]
-roseChildList (Rose _ rs) = rs
-roseChildList _ = modErr "roseChildList" "Invalid rose tree shape"
-
--- | Split list into chunks.
+-- | Filter list based on another equal sized list of bools.
 --
 -- Examples:
 --
--- splitChunks [0, 1, 2, 3, 4] [2, 3]
--- [[0,1],[2,3,4]]
-splitChunks :: [a] -> [Int] -> [[a]]
-splitChunks xs chunkList
-  | length xs /= L.foldl' (+) 0 chunkList =
-    modErr "splitChunks" "Chunks must sum to list length"
-  | otherwise = go chunkList xs
-  where
-    go [] _ = []
-    go (c:cs) ds = take c ds : go cs (drop c ds)
+-- >>>  filterMask [1..5] [True, False, True, False, False]
+-- [1,3]
+filterMask :: [a] -> [Bool] -> [a]
+filterMask xs ts
+  | length xs /= length ts =
+    modErr "filterMask" "mask length must match data length."
+  | otherwise = (map fst . filter snd . zip xs) ts
 
 -- | Find number of distinct elements in a category.
 --
@@ -207,12 +134,15 @@ listToCat xs order
     , _categoryTable = map swap orderedPairs
       & mapped . _2 %~ toString
       & Map.fromList
+    , _categoryGroups = []
     }
   where
     toString = filter (/= '"') . show
     orderedPairs = zip order [0..]
     idxMap = Map.fromList orderedPairs
-    replaceWithIdx x = idxMap Map.! x
+    replaceWithIdx x = case Map.lookup x idxMap of
+      Just a -> a
+      Nothing -> modErr "listToCat" "No idx created for category value"
 
 modErr :: String -> String -> a
 modErr f err = error

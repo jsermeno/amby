@@ -24,7 +24,10 @@ instance {-# OVERLAPPING #-} Display (AmbyChart ()) where
 instance {-# OVERLAPPING #-} Display (EC (Layout Double Double) ()) where
   display a = saveAndDisplayEC a
 
-saveAndDisplay :: AmbyChart () -> DisplayText
+instance {-# OVERLAPPING #-} Display (AmbyGrid ()) where
+  display a = saveAndDisplay a
+
+saveAndDisplay :: Saveable s => s -> DisplayText
 saveAndDisplay chart = saveAndDisplayIO $ do
   Plot.save chart
 
@@ -47,4 +50,3 @@ saveAndDisplayIO ioAction = unsafePerformIO $ do
         return $ mkDt "Could not find imgcat executable."
       | otherwise =
         return $ mkDt "Unknown display error."
-

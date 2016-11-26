@@ -10,7 +10,7 @@ main :: IO ()
 main = do
   doctest
     [ "src/Amby/Numeric.hs"
-    , "src/Amby/Container.hs"
+    , "src/Amby/Categorical.hs"
     , "src/Amby/Theme.hs"
     ]
   defaultMain tests

@@ -33,11 +33,12 @@ tested-with:         GHC==8.0.1, GHC==7.10.3, GHC==7.10.2
 library
   hs-source-dirs:      src
   exposed-modules:     Amby
-  other-modules:       Amby.Categorical
+  other-modules:       Amby.BoxPlot
+                     , Amby.Categorical
                      , Amby.Display
+                     , Amby.FactorPlot
                      , Amby.Numeric
                      , Amby.Plot
-                     , Amby.BoxPlot
                      , Amby.Style
                      , Amby.Theme
                      , Amby.Types

@@ -9,13 +9,14 @@ import Control.Monad
 import Control.Monad.State
 import qualified Data.List as L
 import qualified Data.Vector.Generic as G
+import qualified Data.Vector.Unboxed as U
 
 import Control.Lens
 import Data.Colour (transparent, opaque)
+import qualified Data.Colour as Colour
 import Data.Colour.SRGB (sRGB)
 import Graphics.Rendering.Chart.Easy (Layout, EC)
 import Graphics.Rendering.Chart.Easy as Chart
-import qualified Statistics.Quantile as Stats
 
 import Amby.Categorical
 import Amby.Types
@@ -45,63 +46,84 @@ drawBoxPlot :: (G.Vector v Double, G.Vector v (Double, Double))
             -> EC (Layout Double Double) ()
 drawBoxPlot palette xs opts
   -- Boxplot for univariate distribution
-  | opts ^. cat == DefaultCategory = do
-    drawUnivariate (head catPalette) lineGray startPos barHeight xs opts
+  | _bpoCat opts == DefaultCategory = do
+    drawUnivariate (head catPalette) lineGray startPos barHeight xs "" opts
 
     -- Axis changes
     axisGetter . Chart.laxis_generate .= scaledAxisCustom def
-      ( startPos - (barHeight / 2) - (1/8) * barHeight
-      , startPos + (barHeight / 2) + (1/8) * barHeight
+      ( mkAxisTuple
+        (startPos - (barHeight / 2) - (1/8) * barHeight)
+        (startPos + (barHeight / 2) + (1/8) * barHeight)
       )
     axisGetter . Chart.laxis_override .= categoricalAxisData []
 
   -- Boxplot against categorical data
-  | opts ^. hue == DefaultCategory = do
-    let groups = filterByCategory xs (opts ^. cat)
-        maxIdx = length groups - 1
+  | _bpoHue opts == DefaultCategory = do
+    -- group data
+    let groups = groupByCategory (G.toList xs) (_bpoCat opts)
+
+    -- draw data
     forM_ (zip3 groups catPalette [0..]) $ \(g, c, i) ->
-      drawUnivariate c lineGray (catMidPos i) barHeight g opts
+      drawUnivariate c lineGray (catMidPos i) barHeight (U.fromList g) "" opts
 
     -- Axis changes
     axisGetter . Chart.laxis_generate .= scaledAxisCustom def
-      ( catMidPos maxIdx - catMargin - (barHeight / 2)
-      , startPos + (barHeight / 2) + catMargin
+      ( mkAxisTuple
+        (catMidPos (nCats - 1) - catMargin - (barHeight / 2))
+        (startPos + (barHeight / 2) + catMargin)
       )
     axisGetter . Chart.laxis_override .= categoricalAxisData catLabelPos
 
   -- Boxplot against two categories
-  | opts ^. col == DefaultCategory = do
-    let groups = filterByCategory2 xs (opts ^. cat) (opts ^. hue)
-    forM_ (zip groups [0..]) $ \(g, i) ->
-      forM_ (zip3 g catPalette [0..]) $ \(gCat, c, j) ->
-        drawUnivariate c lineGray (hueMidPos i j) barHeight gCat opts
+  | otherwise = do
+    -- group data
+    let groups = groupByCategory (G.toList xs) cats
+        hueGroups = groupByCategory (getCategoryList hues) cats
+
+    -- draw data
+    forM_ (zip3 groups hueGroups [0..]) $ \(catData, hueData, i) ->
+      forM_ (zip3 (getCategoryOrder hues) catPalette [0..]) $ \(hueVal, c, j) -> do
+        let hueMask = map (== hueVal) hueData
+            drawData = U.fromList $ filterMask catData hueMask
+            l = if i == 0 && (opts ^. hueLegend)
+              then getCategoryLabelFromVal hues hueVal
+              else ""
+        drawUnivariate c lineGray (hueMidPos i j) barHeight drawData l opts
 
     -- Axis changes
     axisGetter . Chart.laxis_generate .= scaledAxisCustom def
-      ( hueMidPos (nCats - 1) (nHues - 1) - (barHeight / 2) - hueMargin
-      , startPos + (barHeight / 2) + hueMargin
+      ( mkAxisTuple
+        (hueMidPos (nCats - 1) (nHues - 1) - (barHeight / 2) - hueMargin)
+        (startPos + (barHeight / 2) + hueMargin)
       )
     axisGetter . Chart.laxis_override .= categoricalAxisData hueLabelPos
-
-  -- Boxplot against three categories
-  | otherwise = undefined
   where
-    catLabels = getCategoryLabels (opts ^. cat)
-    nCats = catSize (opts ^. cat)
-    nHues = catSize (opts ^. hue)
-    _nCols = catSize (opts ^. col)
+    cats = _bpoCat opts
+    hues = _bpoHue opts
+    catLabels = getCategoryLabels cats
+    nCats = catSize cats
+    nHues = catSize hues
     cUser = opts ^. color
     sat = opts ^. saturation
     (catPalette, lineGray) = getCategoricalPalette palette cUser nCats nHues sat
 
+    mkAxisTuple x y = if opts ^. axis == XAxis
+      then (x, y)
+      else (abs y, abs x)
+    mkLabelTuple x s = if opts ^. axis == XAxis
+      then (x, s)
+      else (abs x, s)
+
     barHeight = 1.0
-    startPos = 1.0
+    startPos = -1.0
 
     catMidSpacing = barHeight / 4.0
     catMidPos :: Int -> Double
     catMidPos i = startPos - (barHeight + catMidSpacing) * fromIntegral i
     catMargin = barHeight / 4.0
-    catLabelPos = zipWith (\i l -> (catMidPos i, l)) [0..] catLabels
+    catLabelPos = if opts ^. catLegend
+      then zipWith (\i l -> mkLabelTuple (catMidPos i) l) [0..] catLabels
+      else []
 
     hueMidSpacing = barHeight / 2.0
     hueMargin = barHeight / 2.0
@@ -113,7 +135,9 @@ drawBoxPlot palette xs opts
       - (fromIntegral j * barHeight)
       - (fromIntegral i * (hueCatSize + hueMidSpacing))
     hueLabelMidPos i = startPos - hueSpan - i * (hueCatSize + hueMidSpacing)
-    hueLabelPos = zipWith (\i l -> (hueLabelMidPos i, l)) [0..] catLabels
+    hueLabelPos = if opts ^. catLegend
+      then zipWith (\i l -> mkLabelTuple (hueLabelMidPos i) l) [0..] catLabels
+      else []
 
     axisGetter = if (opts ^. axis) == XAxis
       then Chart.layout_y_axis
@@ -121,13 +145,13 @@ drawBoxPlot palette xs opts
 
 drawUnivariate :: (G.Vector v Double, G.Vector v (Double, Double))
                => AlphaColour Double -> AlphaColour Double
-               -> Double -> Double -> v Double
+               -> Double -> Double -> v Double -> String
                -> BoxPlotOpts -> EC (Layout Double Double) ()
-drawUnivariate c lineGray midY yHeight xs opts = do
+drawUnivariate c lineGray midY yHeight xs l opts = do
     Chart.plot $ return $ Chart.Plot
-      { _plot_render = renderBoxPlot
-      , _plot_legend = [("", const $ return ())]
-      , _plot_all_points = unzip allPoints
+      { _plot_render = if noData then const (return ()) else renderBoxPlot
+      , _plot_legend = [(l, renderLabel)]
+      , _plot_all_points = if noData then ([], []) else unzip allPoints
       }
     Chart.plot $ Chart.liftEC $ do
       Chart.plot_points_values .= outlierPts
@@ -135,10 +159,11 @@ drawUnivariate c lineGray midY yHeight xs opts = do
       Chart.plot_points_style . Chart.point_shape .= Chart.PointShapePolygon 4 True
       Chart.plot_points_style . Chart.point_color .= lineGray
   where
+    noData = G.length xs == 0
     whiskLimit = interquartileRange xs * 1.5
-    firstQuartile = Stats.weightedAvg 1 4 xs
-    thirdQuartile = Stats.weightedAvg 3 4 xs
-    median = Stats.weightedAvg 50 100 xs
+    firstQuartile = scoreAtPercentile xs 25
+    thirdQuartile = scoreAtPercentile xs 75
+    median = scoreAtPercentile xs 50
     startWhiskFoldFn a b = if b < a && b >= firstQuartile - whiskLimit
       then b
       else a
@@ -148,7 +173,7 @@ drawUnivariate c lineGray midY yHeight xs opts = do
     startWhisk = G.foldl' startWhiskFoldFn firstQuartile xs
     endWhisk = G.foldl' endWhiskFoldFn thirdQuartile xs
     outliers = G.filter (\x -> x < startWhisk || x > endWhisk) xs
-    pt x y = if opts ^. axis == XAxis then (x, y) else (y, x)
+    pt x y = if opts ^. axis == XAxis then (x, y) else (-y, x)
     yt = midY + (yHeight / 2)
     yb = midY - (yHeight / 2)
     yt4 = midY + (yHeight / 4)
@@ -164,6 +189,17 @@ drawUnivariate c lineGray midY yHeight xs opts = do
       , pt endWhisk midY, pt endWhisk yt4, pt endWhisk yb4
       ] ++ outlierPts
 
+    renderLabel r@(Rect _ _) = do
+        Chart.withFillStyle fillStyle $ do
+          Chart.alignFillPath (Chart.rectPath r) >>= Chart.fillPath
+        Chart.withLineStyle lineStyle $ do
+          Chart.alignStrokePath (Chart.rectPath r) >>= Chart.strokePath
+      where
+        lineStyle = def
+          & Chart.line_width .~ (opts ^. linewidth) / 2
+          & Chart.line_color .~ lineGray
+        fillStyle = def & Chart.fill_color .~ c
+
     renderBoxPlot pmap = do
       Chart.withFillStyle fillStyle $ do
         Chart.alignFillPath (plotBox pmap) >>= Chart.fillPath
@@ -175,7 +211,7 @@ drawUnivariate c lineGray midY yHeight xs opts = do
           & Chart.line_width .~ (opts ^. linewidth)
           & Chart.line_color .~ lineGray
         fillStyle = def
-          & Chart.fill_color .~ c
+          & Chart.fill_color .~ Colour.dissolve 0.8 c
 
     plotWhiskers pmap =
         Chart.MoveTo (ptr startWhisk yt4)
